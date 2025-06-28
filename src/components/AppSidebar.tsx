@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { 
   Package, 
@@ -5,7 +6,8 @@ import {
   BarChart3, 
   Plus, 
   Tag,
-  FileText
+  FileText,
+  Warehouse
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -28,6 +30,7 @@ const navigationItems = [
   { title: "Categorias", url: "/categorias", icon: Tag },
   { title: "Sacoleiras", url: "/sacoleiras", icon: Users },
   { title: "Lançamentos", url: "/lancamentos", icon: FileText },
+  { title: "Estoque Sacoleiras", url: "/estoque-sacoleiras", icon: Warehouse },
 ]
 
 const quickActions = [

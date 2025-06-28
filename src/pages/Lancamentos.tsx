@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Calendar, Package, Users, DollarSign } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Plus, Search, Calendar, Package, Users } from "lucide-react"
 
 export default function Lancamentos() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [filtroCategoria, setFiltroCategoria] = useState("")
   const [formData, setFormData] = useState({
     produto: "",
     valor: "",
@@ -66,11 +68,14 @@ export default function Lancamentos() {
     { id: 4, nome: "Rosa Costa" }
   ]
 
-  const filteredLancamentos = mockLancamentos.filter(lancamento =>
-    lancamento.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lancamento.sacoleira.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lancamento.categoria.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
+
+  const filteredLancamentos = mockLancamentos.filter(lancamento => {
+    const matchesSearch = lancamento.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         lancamento.sacoleira.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategoria = !filtroCategoria || lancamento.categoria === filtroCategoria
+    return matchesSearch && matchesCategoria
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -104,7 +109,6 @@ export default function Lancamentos() {
         </Button>
       </div>
 
-      {/* Formulário de novo lançamento */}
       {showForm && (
         <Card>
           <CardHeader>
@@ -115,34 +119,30 @@ export default function Lancamentos() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="produto">Produto *</Label>
-                  <select
-                    id="produto"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.produto}
-                    onChange={(e) => handleProdutoChange(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione um produto</option>
-                    {mockProdutos.map(produto => (
-                      <option key={produto.id} value={produto.nome}>{produto.nome}</option>
-                    ))}
-                  </select>
+                  <Select value={formData.produto} onValueChange={handleProdutoChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um produto" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockProdutos.map(produto => (
+                        <SelectItem key={produto.id} value={produto.nome}>{produto.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="sacoleira">Sacoleira *</Label>
-                  <select
-                    id="sacoleira"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.sacoleira}
-                    onChange={(e) => setFormData({...formData, sacoleira: e.target.value})}
-                    required
-                  >
-                    <option value="">Selecione uma sacoleira</option>
-                    {mockSacoleiras.map(sacoleira => (
-                      <option key={sacoleira.id} value={sacoleira.nome}>{sacoleira.nome}</option>
-                    ))}
-                  </select>
+                  <Select value={formData.sacoleira} onValueChange={(value) => setFormData({...formData, sacoleira: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma sacoleira" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockSacoleiras.map(sacoleira => (
+                        <SelectItem key={sacoleira.id} value={sacoleira.nome}>{sacoleira.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -155,6 +155,8 @@ export default function Lancamentos() {
                     onChange={(e) => setFormData({...formData, valor: e.target.value})}
                     placeholder="0,00"
                     required
+                    readOnly
+                    className="bg-gray-50"
                   />
                 </div>
 
@@ -175,8 +177,6 @@ export default function Lancamentos() {
                   <Input
                     id="categoria"
                     value={formData.categoria}
-                    onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                    placeholder="Categoria do produto"
                     readOnly
                     className="bg-gray-50"
                   />
@@ -219,20 +219,34 @@ export default function Lancamentos() {
         </Card>
       )}
 
-      {/* Filtros e busca */}
+      {/* Filtros */}
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-            <Input
-              placeholder="Buscar lançamentos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+              <Input
+                placeholder="Buscar lançamentos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todas as categorias" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas as categorias</SelectItem>
+                {categorias.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
