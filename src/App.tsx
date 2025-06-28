@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Produtos from "./pages/Produtos";
@@ -15,6 +17,7 @@ import Lancamentos from "./pages/Lancamentos";
 import Movimentacoes from "./pages/Movimentacoes";
 import NotFound from "./pages/NotFound";
 import EstoqueSacoleiras from "./pages/EstoqueSacoleiras";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -24,21 +27,75 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
+        <AuthProvider>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/produtos" element={<Produtos />} />
-            <Route path="/produtos/novo" element={<NovoProduto />} />
-            <Route path="/categorias" element={<Categorias />} />
-            <Route path="/sacoleiras" element={<Sacoleiras />} />
-            <Route path="/sacoleiras/nova" element={<NovaSacoleira />} />
-            <Route path="/lancamentos" element={<Lancamentos />} />
-            <Route path="/movimentacoes" element={<Movimentacoes />} />
-            <Route path="/estoque-sacoleiras" element={<EstoqueSacoleiras />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/produtos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Produtos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/produtos/novo" element={
+              <ProtectedRoute requireAdmin>
+                <Layout>
+                  <NovoProduto />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/categorias" element={
+              <ProtectedRoute requireAdmin>
+                <Layout>
+                  <Categorias />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/sacoleiras" element={
+              <ProtectedRoute requireAdmin>
+                <Layout>
+                  <Sacoleiras />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/sacoleiras/nova" element={
+              <ProtectedRoute requireAdmin>
+                <Layout>
+                  <NovaSacoleira />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/lancamentos" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Lancamentos />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/movimentacoes" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Movimentacoes />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/estoque-sacoleiras" element={
+              <ProtectedRoute>
+                <Layout>
+                  <EstoqueSacoleiras />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </Layout>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
