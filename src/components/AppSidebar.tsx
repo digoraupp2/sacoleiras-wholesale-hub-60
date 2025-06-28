@@ -40,9 +40,10 @@ const quickActions = [
 ]
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar()
+  const { state } = useSidebar()
   const location = useLocation()
   const currentPath = location.pathname
+  const isCollapsed = state === "collapsed"
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/"
@@ -56,8 +57,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={collapsed ? "w-16" : "w-64"}
-      collapsible
+      className={isCollapsed ? "w-16" : "w-64"}
+      collapsible="icon"
     >
       <SidebarContent className="bg-sidebar">
         {/* Header */}
@@ -66,7 +67,7 @@ export function AppSidebar() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Package className="w-5 h-5 text-primary-foreground" />
             </div>
-            {!collapsed && (
+            {!isCollapsed && (
               <div>
                 <h2 className="text-lg font-bold text-sidebar-foreground">Atacado Pro</h2>
                 <p className="text-xs text-sidebar-foreground/60">Gestão de Sacoleiras</p>
@@ -78,7 +79,7 @@ export function AppSidebar() {
         {/* Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/60">
-            {!collapsed && "Navegação"}
+            {!isCollapsed && "Navegação"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -90,7 +91,7 @@ export function AppSidebar() {
                       className={`${getNavCls(item.url)} flex items-center gap-3 px-3 py-2 rounded-md transition-colors`}
                     >
                       <item.icon className="w-4 h-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -102,7 +103,7 @@ export function AppSidebar() {
         {/* Quick Actions */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/60">
-            {!collapsed && "Ações Rápidas"}
+            {!isCollapsed && "Ações Rápidas"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -114,7 +115,7 @@ export function AppSidebar() {
                       className="hover:bg-accent/20 text-sidebar-foreground/80 hover:text-accent flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
                     >
                       <item.icon className="w-4 h-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
