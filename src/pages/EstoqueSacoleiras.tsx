@@ -1,12 +1,12 @@
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Package, Users, Plus, Minus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { MovimentacaoForm } from "@/components/MovimentacaoForm"
+import { EstoqueFilters } from "@/components/EstoqueFilters"
+import { EstoqueCard } from "@/components/EstoqueCard"
+import { EstoqueEmpty } from "@/components/EstoqueEmpty"
+import { useEstoque } from "@/hooks/useEstoque"
 
 export default function EstoqueSacoleiras() {
   const [showForm, setShowForm] = useState(false)
@@ -39,46 +39,8 @@ export default function EstoqueSacoleiras() {
     { id: 6, produto: "Jaqueta de Couro", sacoleira: "Maria Silva", tipo: "entrega", quantidade: 5, data: "2024-01-17" }
   ])
 
-  const calcularEstoque = () => {
-    const estoque: { [key: string]: { [produto: string]: number } } = {}
-    
-    movimentacoes.forEach(mov => {
-      if (!estoque[mov.sacoleira]) {
-        estoque[mov.sacoleira] = {}
-      }
-      
-      if (!estoque[mov.sacoleira][mov.produto]) {
-        estoque[mov.sacoleira][mov.produto] = 0
-      }
-      
-      if (mov.tipo === "entrega") {
-        estoque[mov.sacoleira][mov.produto] += mov.quantidade
-      } else {
-        estoque[mov.sacoleira][mov.produto] -= mov.quantidade
-      }
-    })
-    
-    return estoque
-  }
-
-  const estoqueAtual = calcularEstoque()
   const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
-
-  const estoqueFiltered = Object.entries(estoqueAtual).filter(([sacoleira, produtos]) => {
-    if (filtroSacoleira && sacoleira !== filtroSacoleira) return false
-    
-    const produtosSacoleira = Object.entries(produtos).filter(([produto, quantidade]) => {
-      if (quantidade <= 0) return false
-      if (searchTerm && !produto.toLowerCase().includes(searchTerm.toLowerCase())) return false
-      
-      const produtoInfo = mockProdutos.find(p => p.nome === produto)
-      if (filtroCategoria && produtoInfo?.categoria !== filtroCategoria) return false
-      
-      return true
-    })
-    
-    return produtosSacoleira.length > 0
-  })
+  const { estoqueFiltered } = useEstoque(movimentacoes, mockProdutos, searchTerm, filtroCategoria, filtroSacoleira)
 
   const handleSubmit = (novaMovimentacao: any) => {
     setMovimentacoes([...movimentacoes, novaMovimentacao])
@@ -107,101 +69,34 @@ export default function EstoqueSacoleiras() {
         />
       )}
 
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-              <Input
-                placeholder="Buscar produtos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todas as categorias" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todas as categorias</SelectItem>
-                {categorias.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <EstoqueFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filtroCategoria={filtroCategoria}
+        setFiltroCategoria={setFiltroCategoria}
+        filtroSacoleira={filtroSacoleira}
+        setFiltroSacoleira={setFiltroSacoleira}
+        categorias={categorias}
+        sacoleiras={mockSacoleiras}
+      />
 
-            <Select value={filtroSacoleira} onValueChange={setFiltroSacoleira}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todas as sacoleiras" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todas as sacoleiras</SelectItem>
-                {mockSacoleiras.map(sacoleira => (
-                  <SelectItem key={sacoleira.id} value={sacoleira.nome}>{sacoleira.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Estoque por Sacoleira */}
       <div className="space-y-4">
         {estoqueFiltered.map(([sacoleira, produtos]) => (
-          <Card key={sacoleira}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-primary" />
-                <CardTitle className="text-xl">{sacoleira}</CardTitle>
-                <Badge variant="outline">
-                  {Object.values(produtos).reduce((total, qtd) => total + (qtd > 0 ? qtd : 0), 0)} itens
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(produtos).filter(([_, qtd]) => qtd > 0).map(([produto, quantidade]) => {
-                  const produtoInfo = mockProdutos.find(p => p.nome === produto)
-                  return (
-                    <div key={produto} className="border rounded-lg p-4 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-primary" />
-                        <h4 className="font-semibold">{produto}</h4>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <Badge variant="secondary">{produtoInfo?.categoria}</Badge>
-                        <span className="text-lg font-bold text-primary">{quantidade} un.</span>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Valor total: R$ {((produtoInfo?.precoVenda || 0) * quantidade).toFixed(2)}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <EstoqueCard
+            key={sacoleira}
+            sacoleira={sacoleira}
+            produtos={produtos}
+            mockProdutos={mockProdutos}
+          />
         ))}
       </div>
 
       {estoqueFiltered.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
-            <p className="text-muted-foreground">
-              {filtroSacoleira || filtroCategoria || searchTerm 
-                ? "Ajuste os filtros para ver os produtos em estoque" 
-                : "Nenhuma sacoleira possui produtos em estoque"}
-            </p>
-          </CardContent>
-        </Card>
+        <EstoqueEmpty
+          filtroSacoleira={filtroSacoleira}
+          filtroCategoria={filtroCategoria}
+          searchTerm={searchTerm}
+        />
       )}
     </div>
   )
