@@ -5,11 +5,13 @@ import { Plus } from "lucide-react"
 import { LancamentoForm } from "@/components/LancamentoForm"
 import { LancamentoFilters } from "@/components/LancamentoFilters"
 import { LancamentoCard } from "@/components/LancamentoCard"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function Lancamentos() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filtroCategoria, setFiltroCategoria] = useState("todas")
+  const { userProfile, isAdmin } = useAuth()
 
   const mockLancamentos = [
     {
@@ -19,6 +21,7 @@ export default function Lancamentos() {
       quantidade: 5,
       categoria: "Roupas Femininas",
       sacoleira: "Maria Silva",
+      sacoleira_id: "sacoleira-1",
       data: "2024-01-15",
       total: 175.00
     },
@@ -29,6 +32,7 @@ export default function Lancamentos() {
       quantidade: 2,
       categoria: "Roupas Masculinas",
       sacoleira: "Ana Santos",
+      sacoleira_id: "sacoleira-2",
       data: "2024-01-14",
       total: 179.80
     },
@@ -39,6 +43,7 @@ export default function Lancamentos() {
       quantidade: 3,
       categoria: "Roupas Femininas",
       sacoleira: "Carla Oliveira",
+      sacoleira_id: "sacoleira-3",
       data: "2024-01-13",
       total: 179.70
     }
@@ -60,7 +65,17 @@ export default function Lancamentos() {
 
   const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
 
-  const filteredLancamentos = mockLancamentos.filter(lancamento => {
+  // Filtrar lançamentos baseado no tipo de usuário
+  let lancamentosParaExibir = mockLancamentos;
+  
+  // Se não for admin, mostrar apenas os lançamentos da própria sacoleira
+  if (!isAdmin && userProfile?.sacoleira_relacionada) {
+    lancamentosParaExibir = mockLancamentos.filter(
+      lancamento => lancamento.sacoleira_id === userProfile.sacoleira_relacionada
+    )
+  }
+
+  const filteredLancamentos = lancamentosParaExibir.filter(lancamento => {
     const matchesSearch = lancamento.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lancamento.sacoleira.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategoria = filtroCategoria === "todas" || lancamento.categoria === filtroCategoria
@@ -77,15 +92,22 @@ export default function Lancamentos() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Lançamentos</h1>
-          <p className="text-muted-foreground">Registre os produtos entregues às sacoleiras</p>
+          <p className="text-muted-foreground">
+            {isAdmin 
+              ? "Registre os produtos entregues às sacoleiras" 
+              : "Seus lançamentos de produtos"
+            }
+          </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Lançamento
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Lançamento
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && isAdmin && (
         <LancamentoForm
           onSubmit={handleSubmit}
           onCancel={() => setShowForm(false)}
@@ -103,9 +125,15 @@ export default function Lancamentos() {
       />
 
       <div className="grid grid-cols-1 gap-4">
-        {filteredLancamentos.map((lancamento) => (
-          <LancamentoCard key={lancamento.id} lancamento={lancamento} />
-        ))}
+        {filteredLancamentos.length > 0 ? (
+          filteredLancamentos.map((lancamento) => (
+            <LancamentoCard key={lancamento.id} lancamento={lancamento} />
+          ))
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            {!isAdmin ? "Nenhum lançamento encontrado para você." : "Nenhum lançamento encontrado."}
+          </div>
+        )}
       </div>
     </div>
   )
