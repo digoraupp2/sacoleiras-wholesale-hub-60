@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -11,8 +10,8 @@ import { useEstoque } from "@/hooks/useEstoque"
 export default function EstoqueSacoleiras() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filtroCategoria, setFiltroCategoria] = useState("")
-  const [filtroSacoleira, setFiltroSacoleira] = useState("")
+  const [filtroCategoria, setFiltroCategoria] = useState("todas")
+  const [filtroSacoleira, setFiltroSacoleira] = useState("todas")
 
   const mockProdutos = [
     { id: 1, nome: "Blusa Feminina Básica", categoria: "Roupas Femininas", precoVenda: 35.00 },
@@ -40,7 +39,7 @@ export default function EstoqueSacoleiras() {
   ])
 
   const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
-  const { estoqueFiltered } = useEstoque(movimentacoes, mockProdutos, searchTerm, filtroCategoria, filtroSacoleira)
+  const { estoqueFiltered } = useEstoque(movimentacoes, mockProdutos, searchTerm, filtroCategoria === "todas" ? "" : filtroCategoria, filtroSacoleira === "todas" ? "" : filtroSacoleira)
 
   const handleSubmit = (novaMovimentacao: any) => {
     setMovimentacoes([...movimentacoes, novaMovimentacao])
@@ -93,8 +92,8 @@ export default function EstoqueSacoleiras() {
 
       {estoqueFiltered.length === 0 && (
         <EstoqueEmpty
-          filtroSacoleira={filtroSacoleira}
-          filtroCategoria={filtroCategoria}
+          filtroSacoleira={filtroSacoleira === "todas" ? "" : filtroSacoleira}
+          filtroCategoria={filtroCategoria === "todas" ? "" : filtroCategoria}
           searchTerm={searchTerm}
         />
       )}

@@ -1,10 +1,15 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface EstoqueFiltrosProps {
+interface Sacoleira {
+  id: number
+  nome: string
+}
+
+interface EstoqueFiltersProps {
   searchTerm: string
   setSearchTerm: (value: string) => void
   filtroCategoria: string
@@ -12,7 +17,7 @@ interface EstoqueFiltrosProps {
   filtroSacoleira: string
   setFiltroSacoleira: (value: string) => void
   categorias: string[]
-  sacoleiras: { id: number; nome: string }[]
+  sacoleiras: Sacoleira[]
 }
 
 export function EstoqueFilters({
@@ -24,7 +29,7 @@ export function EstoqueFilters({
   setFiltroSacoleira,
   categorias,
   sacoleiras
-}: EstoqueFiltrosProps) {
+}: EstoqueFiltersProps) {
   return (
     <Card>
       <CardHeader>
@@ -35,21 +40,23 @@ export function EstoqueFilters({
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
             <Input
-              placeholder="Buscar produtos..."
+              placeholder="Buscar produto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
-          
+
           <Select value={filtroCategoria} onValueChange={setFiltroCategoria}>
             <SelectTrigger>
               <SelectValue placeholder="Todas as categorias" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as categorias</SelectItem>
-              {categorias.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              <SelectItem value="todas">Todas as categorias</SelectItem>
+              {categorias.filter(categoria => categoria && categoria.trim() !== "").map(categoria => (
+                <SelectItem key={categoria} value={categoria}>
+                  {categoria}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -59,9 +66,11 @@ export function EstoqueFilters({
               <SelectValue placeholder="Todas as sacoleiras" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as sacoleiras</SelectItem>
-              {sacoleiras.map(sacoleira => (
-                <SelectItem key={sacoleira.id} value={sacoleira.nome}>{sacoleira.nome}</SelectItem>
+              <SelectItem value="todas">Todas as sacoleiras</SelectItem>
+              {sacoleiras.filter(sacoleira => sacoleira.nome && sacoleira.nome.trim() !== "").map(sacoleira => (
+                <SelectItem key={sacoleira.id} value={sacoleira.nome}>
+                  {sacoleira.nome}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

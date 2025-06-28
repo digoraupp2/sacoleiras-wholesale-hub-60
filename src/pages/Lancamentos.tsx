@@ -9,7 +9,7 @@ import { LancamentoCard } from "@/components/LancamentoCard"
 export default function Lancamentos() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filtroCategoria, setFiltroCategoria] = useState("")
+  const [filtroCategoria, setFiltroCategoria] = useState("todas")
 
   const mockLancamentos = [
     {
@@ -63,7 +63,7 @@ export default function Lancamentos() {
   const filteredLancamentos = mockLancamentos.filter(lancamento => {
     const matchesSearch = lancamento.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lancamento.sacoleira.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategoria = !filtroCategoria || lancamento.categoria === filtroCategoria
+    const matchesCategoria = filtroCategoria === "todas" || lancamento.categoria === filtroCategoria
     return matchesSearch && matchesCategoria
   })
 
