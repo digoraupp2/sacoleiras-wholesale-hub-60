@@ -31,12 +31,12 @@ export default function EstoqueSacoleiras() {
   ]
 
   const [movimentacoes, setMovimentacoes] = useState([
-    { id: 1, produto: "Blusa Feminina Básica", sacoleira: "Maria Silva", tipo: "entrega", quantidade: 15, data: "2024-01-15" },
-    { id: 2, produto: "Tênis Esportivo", sacoleira: "Maria Silva", tipo: "entrega", quantidade: 10, data: "2024-01-15" },
-    { id: 3, produto: "Moleton Básico", sacoleira: "Maria Silva", tipo: "entrega", quantidade: 5, data: "2024-01-15" },
-    { id: 4, produto: "Blusa Feminina Básica", sacoleira: "Maria Silva", tipo: "devolucao", quantidade: 3, data: "2024-01-16" },
-    { id: 5, produto: "Tênis Esportivo", sacoleira: "Maria Silva", tipo: "devolucao", quantidade: 5, data: "2024-01-16" },
-    { id: 6, produto: "Jaqueta de Couro", sacoleira: "Maria Silva", tipo: "entrega", quantidade: 5, data: "2024-01-17" }
+    { id: 1, produto: "Blusa Feminina Básica", sacoleira: "Maria Silva", tipo: "entrega" as const, quantidade: 15, data: "2024-01-15" },
+    { id: 2, produto: "Tênis Esportivo", sacoleira: "Maria Silva", tipo: "entrega" as const, quantidade: 10, data: "2024-01-15" },
+    { id: 3, produto: "Moleton Básico", sacoleira: "Maria Silva", tipo: "entrega" as const, quantidade: 5, data: "2024-01-15" },
+    { id: 4, produto: "Blusa Feminina Básica", sacoleira: "Maria Silva", tipo: "devolucao" as const, quantidade: 3, data: "2024-01-16" },
+    { id: 5, produto: "Tênis Esportivo", sacoleira: "Maria Silva", tipo: "devolucao" as const, quantidade: 5, data: "2024-01-16" },
+    { id: 6, produto: "Jaqueta de Couro", sacoleira: "Maria Silva", tipo: "entrega" as const, quantidade: 5, data: "2024-01-17" }
   ])
 
   const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
