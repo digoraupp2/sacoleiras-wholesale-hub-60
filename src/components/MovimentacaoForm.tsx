@@ -5,47 +5,105 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { X } from "lucide-react"
+
+interface Produto {
+  id: number
+  nome: string
+  categoria: string
+  precoVenda: number
+}
+
+interface Sacoleira {
+  id: number
+  nome: string
+}
 
 interface MovimentacaoFormProps {
-  onSubmit: (movimentacao: any) => void
+  onSubmit: (data: any) => void
   onCancel: () => void
-  produtos: any[]
-  sacoleiras: any[]
+  produtos: Produto[]
+  sacoleiras: Sacoleira[]
 }
 
 export function MovimentacaoForm({ onSubmit, onCancel, produtos, sacoleiras }: MovimentacaoFormProps) {
-  const [formData, setFormData] = useState({
-    produto: "",
-    sacoleira: "",
-    tipo: "",
-    quantidade: "",
-    observacoes: ""
-  })
+  const [produtoId, setProdutoId] = useState("")
+  const [sacoleiraId, setSacoleiraId] = useState("")
+  const [tipo, setTipo] = useState("")
+  const [quantidade, setQuantidade] = useState("")
+
+  const produtoSelecionado = produtos.find(p => p.id.toString() === produtoId)
+  const sacoleiraSelecionada = sacoleiras.find(s => s.id.toString() === sacoleiraId)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({
-      ...formData,
-      quantidade: parseInt(formData.quantidade),
-      data: new Date().toISOString(),
-      id: Date.now()
-    })
-    setFormData({ produto: "", sacoleira: "", tipo: "", quantidade: "", observacoes: "" })
-  }
+    
+    if (!produtoSelecionado || !sacoleiraSelecionada || !tipo || !quantidade) {
+      return
+    }
 
-  const produtoSelecionado = produtos.find(p => p.nome === formData.produto)
+    const novaMovimentacao = {
+      id: Date.now(),
+      produto: produtoSelecionado.nome,
+      sacoleira: sacoleiraSelecionada.nome,
+      tipo,
+      quantidade: parseInt(quantidade),
+      data: new Date().toISOString().split('T')[0]
+    }
+
+    onSubmit(novaMovimentacao)
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nova Movimentação</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Nova Movimentação</CardTitle>
+          <Button variant="ghost" size="icon" onClick={onCancel}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo de Movimentação *</Label>
-              <Select value={formData.tipo} onValueChange={(value) => setFormData({...formData, tipo: value})}>
+              <Label htmlFor="produto">Produto</Label>
+              <Select value={produtoId} onValueChange={setProdutoId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um produto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {produtos.map(produto => (
+                    <SelectItem key={produto.id} value={produto.id.toString()}>
+                      {produto.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sacoleira">Sacoleira</Label>
+              <Select value={sacoleiraId} onValueChange={setSacoleiraId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma sacoleira" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sacoleiras.map(sacoleira => (
+                    <SelectItem key={sacoleira.id} value={sacoleira.id.toString()}>
+                      {sacoleira.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tipo">Tipo de Movimentação</Label>
+              <Select value={tipo} onValueChange={setTipo}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
@@ -57,86 +115,33 @@ export function MovimentacaoForm({ onSubmit, onCancel, produtos, sacoleiras }: M
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="sacoleira">Sacoleira *</Label>
-              <Select value={formData.sacoleira} onValueChange={(value) => setFormData({...formData, sacoleira: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma sacoleira" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sacoleiras.map(sacoleira => (
-                    <SelectItem key={sacoleira.id} value={sacoleira.nome}>{sacoleira.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="produto">Produto *</Label>
-              <Select value={formData.produto} onValueChange={(value) => setFormData({...formData, produto: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um produto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {produtos.map(produto => (
-                    <SelectItem key={produto.id} value={produto.nome}>{produto.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="quantidade">Quantidade *</Label>
+              <Label htmlFor="quantidade">Quantidade</Label>
               <Input
                 id="quantidade"
                 type="number"
                 min="1"
-                value={formData.quantidade}
-                onChange={(e) => setFormData({...formData, quantidade: e.target.value})}
-                placeholder="0"
-                required
+                value={quantidade}
+                onChange={(e) => setQuantidade(e.target.value)}
+                placeholder="Digite a quantidade"
               />
             </div>
-
-            {produtoSelecionado && (
-              <div className="space-y-2">
-                <Label>Categoria</Label>
-                <Input
-                  value={produtoSelecionado.categoria}
-                  readOnly
-                  className="bg-gray-50"
-                />
-              </div>
-            )}
-
-            {produtoSelecionado && formData.quantidade && (
-              <div className="space-y-2">
-                <Label>Valor Total</Label>
-                <Input
-                  value={`R$ ${(produtoSelecionado.precoVenda * parseInt(formData.quantidade)).toFixed(2)}`}
-                  readOnly
-                  className="bg-gray-50 font-bold"
-                />
-              </div>
-            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="observacoes">Observações</Label>
-            <textarea
-              id="observacoes"
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={formData.observacoes}
-              onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
-              placeholder="Observações sobre a movimentação..."
-              rows={3}
-            />
-          </div>
+          {produtoSelecionado && tipo && quantidade && (
+            <div className="p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2">Resumo da Movimentação</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>Produto: {produtoSelecionado.nome}</div>
+                <div>Sacoleira: {sacoleiraSelecionada?.nome}</div>
+                <div>Tipo: {tipo === 'entrega' ? 'Entrega' : 'Devolução'}</div>
+                <div>Quantidade: {quantidade} un.</div>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-2">
-            <Button type="submit">Salvar Movimentação</Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
+            <Button type="submit" className="flex-1">Registrar Movimentação</Button>
+            <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
           </div>
         </form>
       </CardContent>

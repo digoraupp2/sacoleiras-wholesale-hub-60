@@ -5,146 +5,141 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { X } from "lucide-react"
+
+interface Produto {
+  id: number
+  nome: string
+  preco: number
+  categoria: string
+}
+
+interface Sacoleira {
+  id: number
+  nome: string
+}
 
 interface LancamentoFormProps {
-  onSubmit: (formData: any) => void
+  onSubmit: (data: any) => void
   onCancel: () => void
-  produtos: any[]
-  sacoleiras: any[]
+  produtos: Produto[]
+  sacoleiras: Sacoleira[]
 }
 
 export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: LancamentoFormProps) {
-  const [formData, setFormData] = useState({
-    produto: "",
-    valor: "",
-    quantidade: "",
-    categoria: "",
-    sacoleira: "",
-    observacoes: ""
-  })
+  const [produtoId, setProdutoId] = useState("")
+  const [sacoleiraId, setSacoleiraId] = useState("")
+  const [quantidade, setQuantidade] = useState("")
+  const [observacoes, setObservacoes] = useState("")
+
+  const produtoSelecionado = produtos.find(p => p.id.toString() === produtoId)
+  const sacoleiraSelecionada = sacoleiras.find(s => s.id.toString() === sacoleiraId)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
-    setFormData({ produto: "", valor: "", quantidade: "", categoria: "", sacoleira: "", observacoes: "" })
-  }
-
-  const handleProdutoChange = (produtoNome: string) => {
-    const produto = produtos.find(p => p.nome === produtoNome)
-    if (produto) {
-      setFormData({
-        ...formData,
-        produto: produto.nome,
-        valor: produto.preco.toString(),
-        categoria: produto.categoria
-      })
+    
+    if (!produtoSelecionado || !sacoleiraSelecionada || !quantidade) {
+      return
     }
+
+    const novoLancamento = {
+      id: Date.now(),
+      produto: produtoSelecionado.nome,
+      valor: produtoSelecionado.preco,
+      quantidade: parseInt(quantidade),
+      categoria: produtoSelecionado.categoria,
+      sacoleira: sacoleiraSelecionada.nome,
+      data: new Date().toISOString().split('T')[0],
+      total: produtoSelecionado.preco * parseInt(quantidade),
+      observacoes
+    }
+
+    onSubmit(novoLancamento)
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Novo Lançamento</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Novo Lançamento</CardTitle>
+          <Button variant="ghost" size="icon" onClick={onCancel}>
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="produto">Produto *</Label>
-              <Select value={formData.produto} onValueChange={handleProdutoChange}>
+              <Label htmlFor="produto">Produto</Label>
+              <Select value={produtoId} onValueChange={setProdutoId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um produto" />
                 </SelectTrigger>
                 <SelectContent>
                   {produtos.map(produto => (
-                    <SelectItem key={produto.id} value={produto.nome}>{produto.nome}</SelectItem>
+                    <SelectItem key={produto.id} value={produto.id.toString()}>
+                      {produto.nome} - R$ {produto.preco.toFixed(2)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="sacoleira">Sacoleira *</Label>
-              <Select value={formData.sacoleira} onValueChange={(value) => setFormData({...formData, sacoleira: value})}>
+              <Label htmlFor="sacoleira">Sacoleira</Label>
+              <Select value={sacoleiraId} onValueChange={setSacoleiraId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma sacoleira" />
                 </SelectTrigger>
                 <SelectContent>
                   {sacoleiras.map(sacoleira => (
-                    <SelectItem key={sacoleira.id} value={sacoleira.nome}>{sacoleira.nome}</SelectItem>
+                    <SelectItem key={sacoleira.id} value={sacoleira.id.toString()}>
+                      {sacoleira.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="valor">Valor do Produto *</Label>
-              <Input
-                id="valor"
-                type="number"
-                step="0.01"
-                value={formData.valor}
-                onChange={(e) => setFormData({...formData, valor: e.target.value})}
-                placeholder="0,00"
-                required
-                readOnly
-                className="bg-gray-50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="quantidade">Quantidade *</Label>
-              <Input
-                id="quantidade"
-                type="number"
-                value={formData.quantidade}
-                onChange={(e) => setFormData({...formData, quantidade: e.target.value})}
-                placeholder="0"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="categoria">Categoria</Label>
-              <Input
-                id="categoria"
-                value={formData.categoria}
-                readOnly
-                className="bg-gray-50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="total">Total</Label>
-              <Input
-                id="total"
-                value={formData.valor && formData.quantidade ? 
-                  `R$ ${(parseFloat(formData.valor) * parseInt(formData.quantidade)).toFixed(2)}` : 
-                  "R$ 0,00"
-                }
-                readOnly
-                className="bg-gray-50 font-bold"
-              />
-            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="observacoes">Observações</Label>
-            <textarea
-              id="observacoes"
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={formData.observacoes}
-              onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
-              placeholder="Observações sobre o lançamento..."
-              rows={3}
+            <Label htmlFor="quantidade">Quantidade</Label>
+            <Input
+              id="quantidade"
+              type="number"
+              min="1"
+              value={quantidade}
+              onChange={(e) => setQuantidade(e.target.value)}
+              placeholder="Digite a quantidade"
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="observacoes">Observações (opcional)</Label>
+            <Input
+              id="observacoes"
+              value={observacoes}
+              onChange={(e) => setObservacoes(e.target.value)}
+              placeholder="Digite observações sobre o lançamento"
+            />
+          </div>
+
+          {produtoSelecionado && quantidade && (
+            <div className="p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2">Resumo do Lançamento</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>Produto: {produtoSelecionado.nome}</div>
+                <div>Valor unitário: R$ {produtoSelecionado.preco.toFixed(2)}</div>
+                <div>Quantidade: {quantidade} un.</div>
+                <div className="font-bold">Total: R$ {(produtoSelecionado.preco * parseInt(quantidade)).toFixed(2)}</div>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
-            <Button type="submit">Salvar Lançamento</Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
+            <Button type="submit" className="flex-1">Criar Lançamento</Button>
+            <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
           </div>
         </form>
       </CardContent>

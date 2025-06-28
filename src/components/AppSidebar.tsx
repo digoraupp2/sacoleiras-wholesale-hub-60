@@ -30,6 +30,7 @@ const navigationItems = [
   { title: "Categorias", url: "/categorias", icon: Tag },
   { title: "Sacoleiras", url: "/sacoleiras", icon: Users },
   { title: "Lançamentos", url: "/lancamentos", icon: FileText },
+  { title: "Movimentações", url: "/movimentacoes", icon: FileText },
   { title: "Estoque Sacoleiras", url: "/estoque-sacoleiras", icon: Warehouse },
 ]
 
