@@ -8,7 +8,8 @@ import {
   ShoppingCart,
   Tag,
   TrendingUp,
-  Settings
+  Settings,
+  FileText
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -30,6 +31,7 @@ const navigationItems = [
   { title: "Produtos", url: "/produtos", icon: Package },
   { title: "Categorias", url: "/categorias", icon: Tag },
   { title: "Sacoleiras", url: "/sacoleiras", icon: Users },
+  { title: "Lançamentos", url: "/lancamentos", icon: FileText },
   { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Preços Personalizados", url: "/precos", icon: ShoppingCart },
 ]

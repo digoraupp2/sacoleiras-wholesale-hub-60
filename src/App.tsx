@@ -12,6 +12,7 @@ import Categorias from "./pages/Categorias";
 import Sacoleiras from "./pages/Sacoleiras";
 import NovaSacoleira from "./pages/NovaSacoleira";
 import Movimentacoes from "./pages/Movimentacoes";
+import Lancamentos from "./pages/Lancamentos";
 import Precos from "./pages/Precos";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/sacoleiras" element={<Sacoleiras />} />
             <Route path="/sacoleiras/nova" element={<NovaSacoleira />} />
             <Route path="/movimentacoes" element={<Movimentacoes />} />
+            <Route path="/lancamentos" element={<Lancamentos />} />
             <Route path="/precos" element={<Precos />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
