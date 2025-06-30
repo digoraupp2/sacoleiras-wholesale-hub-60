@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 
 interface Sacoleira {
-  id: number
+  id: string
   nome: string
   cpf: string
   telefone: string
