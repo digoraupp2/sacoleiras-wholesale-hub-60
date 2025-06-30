@@ -31,8 +31,6 @@ const allNavigationItems = [
   { title: "Categorias", url: "/categorias", icon: Tag, adminOnly: true },
   { title: "Sacoleiras", url: "/sacoleiras", icon: Users, adminOnly: true },
   { title: "Lançamentos", url: "/lancamentos", icon: FileText, adminOnly: false },
-  { title: "Movimentações", url: "/movimentacoes", icon: FileText, adminOnly: false },
-  { title: "Estoque Sacoleiras", url: "/estoque-sacoleiras", icon: Warehouse, adminOnly: true },
 ]
 
 const allQuickActions = [

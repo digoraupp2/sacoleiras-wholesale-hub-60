@@ -14,9 +14,7 @@ import Categorias from "./pages/Categorias";
 import Sacoleiras from "./pages/Sacoleiras";
 import NovaSacoleira from "./pages/NovaSacoleira";
 import Lancamentos from "./pages/Lancamentos";
-import Movimentacoes from "./pages/Movimentacoes";
 import NotFound from "./pages/NotFound";
-import EstoqueSacoleiras from "./pages/EstoqueSacoleiras";
 import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
@@ -76,20 +74,6 @@ const App = () => (
               <ProtectedRoute>
                 <Layout>
                   <Lancamentos />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/movimentacoes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Movimentacoes />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/estoque-sacoleiras" element={
-              <ProtectedRoute>
-                <Layout>
-                  <EstoqueSacoleiras />
                 </Layout>
               </ProtectedRoute>
             } />

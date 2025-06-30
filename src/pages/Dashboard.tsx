@@ -7,7 +7,7 @@ export default function Dashboard() {
   const mockData = {
     totalProdutos: 1248,
     sacoleirasAtivas: 34,
-    movimentacoesMes: 856,
+    lancamentosMes: 856,
     faturamentoMes: 'R$ 45.230',
     produtosEmFalta: 12,
     pedidosPendentes: 8
@@ -36,8 +36,8 @@ export default function Dashboard() {
           color="accent"
         />
         <MetricCard
-          title="Movimentações (Mês)"
-          value={mockData.movimentacoesMes}
+          title="Lançamentos (Mês)"
+          value={mockData.lancamentosMes}
           icon={TrendingUp}
           trend={{ value: "+8% vs mês anterior", isPositive: true }}
         />
@@ -65,7 +65,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Movimentações Recentes</CardTitle>
+            <CardTitle>Lançamentos Recentes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -73,13 +73,13 @@ export default function Dashboard() {
                 { tipo: "Entrega", sacoleira: "Maria Silva", produto: "Blusa Feminina", qtd: 10 },
                 { tipo: "Venda", sacoleira: "Ana Costa", produto: "Calça Jeans", qtd: 5 },
                 { tipo: "Devolução", sacoleira: "João Santos", produto: "Vestido Floral", qtd: 2 },
-              ].map((mov, index) => (
+              ].map((lanc, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium">{mov.tipo} - {mov.sacoleira}</p>
-                    <p className="text-sm text-muted-foreground">{mov.produto}</p>
+                    <p className="font-medium">{lanc.tipo} - {lanc.sacoleira}</p>
+                    <p className="text-sm text-muted-foreground">{lanc.produto}</p>
                   </div>
-                  <span className="font-bold">{mov.qtd} un.</span>
+                  <span className="font-bold">{lanc.qtd} un.</span>
                 </div>
               ))}
             </div>
