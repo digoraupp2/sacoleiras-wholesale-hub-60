@@ -9,13 +9,212 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      categorias: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      movimentacoes: {
+        Row: {
+          created_at: string | null
+          id: string
+          observacoes: string | null
+          produto_id: string | null
+          quantidade: number
+          sacoleira_id: string | null
+          tipo_movimentacao: string
+          valor_unitario: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          observacoes?: string | null
+          produto_id?: string | null
+          quantidade: number
+          sacoleira_id?: string | null
+          tipo_movimentacao: string
+          valor_unitario?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          observacoes?: string | null
+          produto_id?: string | null
+          quantidade?: number
+          sacoleira_id?: string | null
+          tipo_movimentacao?: string
+          valor_unitario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_sacoleira_id_fkey"
+            columns: ["sacoleira_id"]
+            isOneToOne: false
+            referencedRelation: "sacoleiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      precos_personalizados: {
+        Row: {
+          created_at: string | null
+          id: string
+          preco_personalizado: number
+          produto_id: string | null
+          sacoleira_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          preco_personalizado: number
+          produto_id?: string | null
+          sacoleira_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          preco_personalizado?: number
+          produto_id?: string | null
+          sacoleira_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "precos_personalizados_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "precos_personalizados_sacoleira_id_fkey"
+            columns: ["sacoleira_id"]
+            isOneToOne: false
+            referencedRelation: "sacoleiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          categoria_id: string | null
+          created_at: string | null
+          estoque_minimo: number | null
+          id: string
+          nome: string
+          preco_base: number
+        }
+        Insert: {
+          categoria_id?: string | null
+          created_at?: string | null
+          estoque_minimo?: number | null
+          id?: string
+          nome: string
+          preco_base: number
+        }
+        Update: {
+          categoria_id?: string | null
+          created_at?: string | null
+          estoque_minimo?: number | null
+          id?: string
+          nome?: string
+          preco_base?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produtos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sacoleiras: {
+        Row: {
+          created_at: string | null
+          endereco: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endereco?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+          sacoleira_relacionada: string | null
+          tipo_usuario: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          nome: string
+          sacoleira_relacionada?: string | null
+          tipo_usuario: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+          sacoleira_relacionada?: string | null
+          tipo_usuario?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

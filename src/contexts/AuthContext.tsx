@@ -2,9 +2,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
 
-type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
+// Temporary type definition until database types are regenerated
+type UserProfile = {
+  id: string;
+  nome: string;
+  tipo_usuario: 'admin' | 'sacoleira';
+  sacoleira_relacionada?: string;
+  created_at?: string;
+  updated_at?: string;
+};
 
 interface AuthContextType {
   user: User | null;
