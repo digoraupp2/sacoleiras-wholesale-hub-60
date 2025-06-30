@@ -8,7 +8,7 @@ import { EditSacoleiraDialog } from "./EditSacoleiraDialog"
 import { ExtractSacoleiraDialog } from "./ExtractSacoleiraDialog"
 
 interface Sacoleira {
-  id: number
+  id: string
   nome: string
   cpf: string
   telefone: string

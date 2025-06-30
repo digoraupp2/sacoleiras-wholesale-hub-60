@@ -33,6 +33,7 @@ export type Database = {
       movimentacoes: {
         Row: {
           created_at: string | null
+          data_movimentacao: string | null
           id: string
           observacoes: string | null
           produto_id: string | null
@@ -43,6 +44,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          data_movimentacao?: string | null
           id?: string
           observacoes?: string | null
           produto_id?: string | null
@@ -53,6 +55,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          data_movimentacao?: string | null
           id?: string
           observacoes?: string | null
           produto_id?: string | null
@@ -68,6 +71,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_sacoleira_id_fkey"
+            columns: ["sacoleira_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_sacoleiras"
+            referencedColumns: ["sacoleira_id"]
           },
           {
             foreignKeyName: "movimentacoes_sacoleira_id_fkey"
@@ -107,6 +117,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "precos_personalizados_sacoleira_id_fkey"
+            columns: ["sacoleira_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_sacoleiras"
+            referencedColumns: ["sacoleira_id"]
           },
           {
             foreignKeyName: "precos_personalizados_sacoleira_id_fkey"
@@ -208,7 +225,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      estoque_sacoleiras: {
+        Row: {
+          preco_base: number | null
+          produto_id: string | null
+          produto_nome: string | null
+          quantidade_estoque: number | null
+          sacoleira_id: string | null
+          sacoleira_nome: string | null
+          valor_estoque: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       is_admin: {
