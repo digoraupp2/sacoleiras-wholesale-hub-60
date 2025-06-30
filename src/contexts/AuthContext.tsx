@@ -53,7 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .single();
               
               console.log('User profile:', profile);
-              setUserProfile(profile);
+              if (profile) {
+                // Validate and cast the tipo_usuario field
+                const validatedProfile: UserProfile = {
+                  ...profile,
+                  tipo_usuario: (profile.tipo_usuario === 'admin' || profile.tipo_usuario === 'sacoleira') 
+                    ? profile.tipo_usuario as 'admin' | 'sacoleira'
+                    : 'sacoleira' // Default fallback
+                };
+                setUserProfile(validatedProfile);
+              }
             } catch (error) {
               console.error('Error fetching user profile:', error);
             }
@@ -80,7 +89,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .eq('id', session.user.id)
               .single();
             
-            setUserProfile(profile);
+            if (profile) {
+              // Validate and cast the tipo_usuario field
+              const validatedProfile: UserProfile = {
+                ...profile,
+                tipo_usuario: (profile.tipo_usuario === 'admin' || profile.tipo_usuario === 'sacoleira') 
+                  ? profile.tipo_usuario as 'admin' | 'sacoleira'
+                  : 'sacoleira' // Default fallback
+              };
+              setUserProfile(validatedProfile);
+            }
           } catch (error) {
             console.error('Error fetching user profile:', error);
           }
