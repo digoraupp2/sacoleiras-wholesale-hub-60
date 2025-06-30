@@ -6,23 +6,66 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 export default function NovaSacoleira() {
   const navigate = useNavigate()
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     nome: "",
     cpf: "",
     telefone: "",
     email: "",
     endereco: "",
-    observacoes: "",
-    status: "ativa"
+    observacoes: ""
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Nova sacoleira:", formData)
-    navigate("/sacoleiras")
+    setLoading(true)
+
+    try {
+      const { data, error } = await supabase
+        .from('sacoleiras')
+        .insert([
+          {
+            nome: formData.nome,
+            cpf: formData.cpf,
+            telefone: formData.telefone,
+            email: formData.email,
+            endereco: formData.endereco
+          }
+        ])
+        .select()
+
+      if (error) {
+        console.error('Erro ao cadastrar sacoleira:', error)
+        toast({
+          title: "Erro",
+          description: "Erro ao cadastrar sacoleira. Tente novamente.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      console.log("Sacoleira cadastrada:", data)
+      toast({
+        title: "Sucesso",
+        description: "Sacoleira cadastrada com sucesso!"
+      })
+      navigate("/sacoleiras")
+    } catch (error) {
+      console.error('Erro ao cadastrar sacoleira:', error)
+      toast({
+        title: "Erro",
+        description: "Erro ao cadastrar sacoleira. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const formatCPF = (value: string) => {
@@ -113,19 +156,6 @@ export default function NovaSacoleira() {
                   required
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <select
-                  id="status"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={formData.status}
-                  onChange={(e) => setFormData({...formData, status: e.target.value})}
-                >
-                  <option value="ativa">Ativa</option>
-                  <option value="inativa">Inativa</option>
-                </select>
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -141,8 +171,12 @@ export default function NovaSacoleira() {
             </div>
 
             <div className="flex gap-4 pt-6">
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
-                Salvar Sacoleira
+              <Button 
+                type="submit" 
+                className="bg-primary hover:bg-primary/90"
+                disabled={loading}
+              >
+                {loading ? "Salvando..." : "Salvar Sacoleira"}
               </Button>
               <Button type="button" variant="outline" asChild>
                 <Link to="/sacoleiras">Cancelar</Link>

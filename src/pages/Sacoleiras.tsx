@@ -63,9 +63,9 @@ export default function Sacoleiras() {
           return {
             id: sacoleira.id,
             nome: sacoleira.nome,
-            cpf: "000.000.000-00", // Valor padrão já que não existe na tabela
+            cpf: sacoleira.cpf || "000.000.000-00",
             telefone: sacoleira.telefone || "Não informado",
-            email: "email@exemplo.com", // Valor padrão já que não existe na tabela
+            email: sacoleira.email || "email@exemplo.com",
             endereco: sacoleira.endereco || "Não informado",
             status: totalProdutos > 0 ? "ativa" : "inativa",
             produtosEmPosse: totalProdutos,

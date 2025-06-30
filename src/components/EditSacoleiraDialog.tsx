@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Sacoleira {
   id: string
@@ -33,25 +34,58 @@ export function EditSacoleiraDialog({ sacoleira, isOpen, onClose, onUpdate }: Ed
     cpf: sacoleira.cpf,
     telefone: sacoleira.telefone,
     email: sacoleira.email,
-    endereco: sacoleira.endereco,
-    status: sacoleira.status
+    endereco: sacoleira.endereco
   })
+  const [loading, setLoading] = useState(false)
   const { toast } = useToast()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     
-    const updatedSacoleira = {
-      ...sacoleira,
-      ...formData
+    try {
+      const { error } = await supabase
+        .from('sacoleiras')
+        .update({
+          nome: formData.nome,
+          cpf: formData.cpf,
+          telefone: formData.telefone,
+          email: formData.email,
+          endereco: formData.endereco
+        })
+        .eq('id', sacoleira.id)
+
+      if (error) {
+        console.error('Erro ao atualizar sacoleira:', error)
+        toast({
+          title: "Erro",
+          description: "Erro ao atualizar sacoleira. Tente novamente.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      const updatedSacoleira = {
+        ...sacoleira,
+        ...formData
+      }
+      
+      onUpdate(updatedSacoleira)
+      toast({
+        title: "Sacoleira atualizada",
+        description: "Os dados da sacoleira foram atualizados com sucesso."
+      })
+      onClose()
+    } catch (error) {
+      console.error('Erro ao atualizar sacoleira:', error)
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar sacoleira. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
     }
-    
-    onUpdate(updatedSacoleira)
-    toast({
-      title: "Sacoleira atualizada",
-      description: "Os dados da sacoleira foram atualizados com sucesso."
-    })
-    onClose()
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -120,25 +154,12 @@ export function EditSacoleiraDialog({ sacoleira, isOpen, onClose, onUpdate }: Ed
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ativa">Ativa</SelectItem>
-                <SelectItem value="inativa">Inativa</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Salvar Alterações
+            <Button type="submit" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>
         </form>
