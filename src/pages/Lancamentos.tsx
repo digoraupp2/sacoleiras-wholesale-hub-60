@@ -6,14 +6,29 @@ import { LancamentoForm } from "@/components/LancamentoForm"
 import { LancamentoFilters } from "@/components/LancamentoFilters"
 import { LancamentoCard } from "@/components/LancamentoCard"
 import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
+
+interface Lancamento {
+  id: number
+  produto: string
+  valor: number
+  quantidade: number
+  categoria: string
+  sacoleira: string
+  sacoleira_id: string
+  data: string
+  total: number
+  observacoes?: string
+}
 
 export default function Lancamentos() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filtroCategoria, setFiltroCategoria] = useState("todas")
   const { userProfile, isAdmin } = useAuth()
+  const { toast } = useToast()
 
-  const mockLancamentos = [
+  const [lancamentos, setLancamentos] = useState<Lancamento[]>([
     {
       id: 1,
       produto: "Blusa Feminina Básica",
@@ -21,7 +36,7 @@ export default function Lancamentos() {
       quantidade: 5,
       categoria: "Roupas Femininas",
       sacoleira: "Maria Silva",
-      sacoleira_id: "sacoleira-1",
+      sacoleira_id: "1",
       data: "2024-01-15",
       total: 175.00
     },
@@ -32,7 +47,7 @@ export default function Lancamentos() {
       quantidade: 2,
       categoria: "Roupas Masculinas",
       sacoleira: "Ana Santos",
-      sacoleira_id: "sacoleira-2",
+      sacoleira_id: "2",
       data: "2024-01-14",
       total: 179.80
     },
@@ -43,11 +58,11 @@ export default function Lancamentos() {
       quantidade: 3,
       categoria: "Roupas Femininas",
       sacoleira: "Carla Oliveira",
-      sacoleira_id: "sacoleira-3",
+      sacoleira_id: "3",
       data: "2024-01-13",
       total: 179.70
     }
-  ]
+  ])
 
   const mockProdutos = [
     { id: 1, nome: "Blusa Feminina Básica", preco: 35.00, categoria: "Roupas Femininas" },
@@ -66,11 +81,11 @@ export default function Lancamentos() {
   const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
 
   // Filtrar lançamentos baseado no tipo de usuário
-  let lancamentosParaExibir = mockLancamentos;
+  let lancamentosParaExibir = lancamentos;
   
   // Se não for admin, mostrar apenas os lançamentos da própria sacoleira
   if (!isAdmin && userProfile?.sacoleira_relacionada) {
-    lancamentosParaExibir = mockLancamentos.filter(
+    lancamentosParaExibir = lancamentos.filter(
       lancamento => lancamento.sacoleira_id === userProfile.sacoleira_relacionada
     )
   }
@@ -83,8 +98,30 @@ export default function Lancamentos() {
   })
 
   const handleSubmit = (formData: any) => {
-    console.log("Novo lançamento:", formData)
-    setShowForm(false)
+    try {
+      console.log("Novo lançamento:", formData)
+      
+      // Adicionar o novo lançamento à lista
+      const novoLancamento: Lancamento = {
+        ...formData,
+        id: Date.now() // Gerar um ID único baseado no timestamp
+      }
+      
+      setLancamentos(prev => [novoLancamento, ...prev])
+      setShowForm(false)
+      
+      toast({
+        title: "Lançamento criado com sucesso!",
+        description: `${formData.produto} foi registrado para ${formData.sacoleira}`,
+      })
+    } catch (error) {
+      console.error("Erro ao criar lançamento:", error)
+      toast({
+        title: "Erro ao criar lançamento",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
