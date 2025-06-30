@@ -29,6 +29,7 @@ interface LancamentoFormProps {
 export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: LancamentoFormProps) {
   const [produtoId, setProdutoId] = useState("")
   const [sacoleiraId, setSacoleiraId] = useState("")
+  const [tipo, setTipo] = useState("")
   const [quantidade, setQuantidade] = useState("")
   const [observacoes, setObservacoes] = useState("")
   const [loading, setLoading] = useState(false)
@@ -39,7 +40,7 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!produtoSelecionado || !sacoleiraSelecionada || !quantidade) {
+    if (!produtoSelecionado || !sacoleiraSelecionada || !tipo || !quantidade) {
       return
     }
 
@@ -60,7 +61,8 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
         sacoleira_id: sacoleiraSelecionada.id.toString(),
         data: new Date().toISOString().split('T')[0],
         total: produtoSelecionado.preco * quantidadeNum,
-        observacoes: observacoes.trim()
+        observacoes: observacoes.trim(),
+        tipo: tipo // Adicionando o tipo (entrega ou devolucao)
       }
 
       await onSubmit(novoLancamento)
@@ -68,6 +70,7 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
       // Resetar formulário após sucesso
       setProdutoId("")
       setSacoleiraId("")
+      setTipo("")
       setQuantidade("")
       setObservacoes("")
     } catch (error) {
@@ -77,7 +80,7 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
     }
   }
 
-  const isFormValid = produtoSelecionado && sacoleiraSelecionada && quantidade && parseInt(quantidade) > 0
+  const isFormValid = produtoSelecionado && sacoleiraSelecionada && tipo && quantidade && parseInt(quantidade) > 0
 
   return (
     <Card>
@@ -125,17 +128,32 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="quantidade">Quantidade *</Label>
-            <Input
-              id="quantidade"
-              type="number"
-              min="1"
-              value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
-              placeholder="Digite a quantidade"
-              disabled={loading}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tipo">Tipo de Movimentação *</Label>
+              <Select value={tipo} onValueChange={setTipo} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="entrega">Entrega</SelectItem>
+                  <SelectItem value="devolucao">Devolução</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="quantidade">Quantidade *</Label>
+              <Input
+                id="quantidade"
+                type="number"
+                min="1"
+                value={quantidade}
+                onChange={(e) => setQuantidade(e.target.value)}
+                placeholder="Digite a quantidade"
+                disabled={loading}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -149,12 +167,13 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
             />
           </div>
 
-          {produtoSelecionado && quantidade && parseInt(quantidade) > 0 && (
+          {produtoSelecionado && tipo && quantidade && parseInt(quantidade) > 0 && (
             <div className="p-4 bg-muted rounded-lg">
               <h4 className="font-semibold mb-2">Resumo do Lançamento</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>Produto: {produtoSelecionado.nome}</div>
                 <div>Valor unitário: R$ {produtoSelecionado.preco.toFixed(2)}</div>
+                <div>Tipo: {tipo === 'entrega' ? 'Entrega' : 'Devolução'}</div>
                 <div>Quantidade: {quantidade} un.</div>
                 <div className="font-bold">Total: R$ {(produtoSelecionado.preco * parseInt(quantidade)).toFixed(2)}</div>
               </div>

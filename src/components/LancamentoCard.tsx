@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Package, Calendar, User, FileText } from "lucide-react"
+import { Package, Calendar, User, FileText, ArrowUp, ArrowDown } from "lucide-react"
 
 interface Lancamento {
   id: number
@@ -13,6 +13,7 @@ interface Lancamento {
   data: string
   total: number
   observacoes?: string
+  tipo?: string
 }
 
 interface LancamentoCardProps {
@@ -20,13 +21,24 @@ interface LancamentoCardProps {
 }
 
 export function LancamentoCard({ lancamento }: LancamentoCardProps) {
+  const isEntrega = !lancamento.tipo || lancamento.tipo === 'entrega'
+  
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
-            <Package className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">{lancamento.produto}</CardTitle>
+            {isEntrega ? (
+              <ArrowUp className="w-5 h-5 text-green-600" />
+            ) : (
+              <ArrowDown className="w-5 h-5 text-red-600" />
+            )}
+            <div>
+              <CardTitle className="text-lg">{lancamento.produto}</CardTitle>
+              <Badge variant={isEntrega ? "default" : "destructive"} className="mt-1">
+                {isEntrega ? "Entrega" : "Devolução"}
+              </Badge>
+            </div>
           </div>
           <Badge variant="outline">{lancamento.categoria}</Badge>
         </div>
@@ -43,7 +55,9 @@ export function LancamentoCard({ lancamento }: LancamentoCardProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Total</p>
-            <p className="font-bold text-primary">R$ {lancamento.total.toFixed(2)}</p>
+            <p className={`font-bold ${isEntrega ? 'text-green-600' : 'text-red-600'}`}>
+              {isEntrega ? '+' : '-'} R$ {lancamento.total.toFixed(2)}
+            </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Data</p>

@@ -15,6 +15,7 @@ interface Lancamento {
   data: string
   total: number
   observacoes?: string
+  tipo?: string
 }
 
 export default function Lancamentos() {
@@ -28,7 +29,8 @@ export default function Lancamentos() {
       sacoleira: "Maria Silva",
       sacoleira_id: "1",
       data: "2024-01-15",
-      total: 175.00
+      total: 175.00,
+      tipo: "entrega"
     },
     {
       id: 2,
@@ -39,7 +41,8 @@ export default function Lancamentos() {
       sacoleira: "Ana Santos",
       sacoleira_id: "2",
       data: "2024-01-14",
-      total: 179.80
+      total: 179.80,
+      tipo: "entrega"
     },
     {
       id: 3,
@@ -50,7 +53,8 @@ export default function Lancamentos() {
       sacoleira: "Carla Oliveira",
       sacoleira_id: "3",
       data: "2024-01-13",
-      total: 179.70
+      total: 179.70,
+      tipo: "devolucao"
     }
   ])
 

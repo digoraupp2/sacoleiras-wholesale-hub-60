@@ -19,6 +19,7 @@ interface Lancamento {
   data: string
   total: number
   observacoes?: string
+  tipo?: string
 }
 
 interface LancamentosContentProps {
@@ -79,9 +80,11 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
       setLancamentos(prev => [novoLancamento, ...prev])
       setShowForm(false)
       
+      const tipoTexto = formData.tipo === 'entrega' ? 'entregue' : 'devolvido'
+      
       toast({
         title: "Lançamento criado com sucesso!",
-        description: `${formData.produto} foi registrado para ${formData.sacoleira}`,
+        description: `${formData.produto} foi ${tipoTexto} para ${formData.sacoleira}`,
       })
     } catch (error) {
       console.error("Erro ao criar lançamento:", error)
