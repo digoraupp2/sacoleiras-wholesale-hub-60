@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Upload, X } from "lucide-react"
+import { ArrowLeft, Upload, X, Check } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
 
 export default function NovoProduto() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -20,6 +21,7 @@ export default function NovoProduto() {
     status: "ativo"
   })
   const [fotos, setFotos] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const categorias = [
     { id: 1, nome: "Roupas Femininas" },
@@ -28,29 +30,119 @@ export default function NovoProduto() {
     { id: 4, nome: "Acessórios" }
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Novo produto:", formData, fotos)
-    navigate("/produtos")
+    setIsSubmitting(true)
+
+    // Validações
+    if (!formData.nome.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome do produto é obrigatório.",
+        variant: "destructive"
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!formData.categoria) {
+      toast({
+        title: "Erro",
+        description: "Categoria é obrigatória.",
+        variant: "destructive"
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!formData.precoCusto || parseFloat(formData.precoCusto) <= 0) {
+      toast({
+        title: "Erro",
+        description: "Preço de custo deve ser maior que zero.",
+        variant: "destructive"
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!formData.precoVenda || parseFloat(formData.precoVenda) <= 0) {
+      toast({
+        title: "Erro",
+        description: "Preço de venda deve ser maior que zero.",
+        variant: "destructive"
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!formData.estoque || parseInt(formData.estoque) < 0) {
+      toast({
+        title: "Erro",
+        description: "Quantidade em estoque deve ser maior ou igual a zero.",
+        variant: "destructive"
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      // Simular salvamento (aqui seria a integração com banco de dados)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      console.log("Produto salvo:", {
+        ...formData,
+        fotos,
+        precoCusto: parseFloat(formData.precoCusto),
+        precoVenda: parseFloat(formData.precoVenda),
+        estoque: parseInt(formData.estoque)
+      })
+
+      toast({
+        title: "Produto criado com sucesso!",
+        description: `O produto "${formData.nome}" foi adicionado ao catálogo.`,
+      })
+
+      navigate("/produtos")
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar produto",
+        description: "Ocorreu um erro ao salvar o produto. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
       Array.from(files).forEach(file => {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          if (e.target?.result) {
-            setFotos(prev => [...prev, e.target!.result as string])
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            if (e.target?.result) {
+              setFotos(prev => [...prev, e.target!.result as string])
+            }
           }
+          reader.readAsDataURL(file)
+        } else {
+          toast({
+            title: "Arquivo inválido",
+            description: "Por favor, selecione apenas arquivos de imagem.",
+            variant: "destructive"
+          })
         }
-        reader.readAsDataURL(file)
       })
     }
   }
 
   const removeImage = (index: number) => {
     setFotos(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   return (
@@ -79,7 +171,7 @@ export default function NovoProduto() {
                 <Input
                   id="nome"
                   value={formData.nome}
-                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                  onChange={(e) => handleInputChange('nome', e.target.value)}
                   placeholder="Ex: Blusa Feminina Básica"
                   required
                 />
@@ -91,7 +183,7 @@ export default function NovoProduto() {
                   id="categoria"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={formData.categoria}
-                  onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                  onChange={(e) => handleInputChange('categoria', e.target.value)}
                   required
                 >
                   <option value="">Selecione uma categoria</option>
@@ -107,8 +199,9 @@ export default function NovoProduto() {
                   id="precoCusto"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.precoCusto}
-                  onChange={(e) => setFormData({...formData, precoCusto: e.target.value})}
+                  onChange={(e) => handleInputChange('precoCusto', e.target.value)}
                   placeholder="0,00"
                   required
                 />
@@ -120,8 +213,9 @@ export default function NovoProduto() {
                   id="precoVenda"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.precoVenda}
-                  onChange={(e) => setFormData({...formData, precoVenda: e.target.value})}
+                  onChange={(e) => handleInputChange('precoVenda', e.target.value)}
                   placeholder="0,00"
                   required
                 />
@@ -132,8 +226,9 @@ export default function NovoProduto() {
                 <Input
                   id="estoque"
                   type="number"
+                  min="0"
                   value={formData.estoque}
-                  onChange={(e) => setFormData({...formData, estoque: e.target.value})}
+                  onChange={(e) => handleInputChange('estoque', e.target.value)}
                   placeholder="0"
                   required
                 />
@@ -145,7 +240,7 @@ export default function NovoProduto() {
                   id="status"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={formData.status}
-                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
                 >
                   <option value="ativo">Ativo</option>
                   <option value="inativo">Inativo</option>
@@ -159,7 +254,7 @@ export default function NovoProduto() {
                 id="descricao"
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={formData.descricao}
-                onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                onChange={(e) => handleInputChange('descricao', e.target.value)}
                 placeholder="Descreva o produto..."
                 rows={3}
               />
@@ -214,8 +309,19 @@ export default function NovoProduto() {
             </div>
 
             <div className="flex gap-4 pt-6">
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
-                Salvar Produto
+              <Button 
+                type="submit" 
+                className="bg-primary hover:bg-primary/90"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>Salvando...</>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Salvar Produto
+                  </>
+                )}
               </Button>
               <Button type="button" variant="outline" asChild>
                 <Link to="/produtos">Cancelar</Link>

@@ -4,13 +4,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Edit, Package } from "lucide-react"
+import { Plus, Search, Edit, Package, Trash2 } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+
+interface Produto {
+  id: number
+  nome: string
+  categoria: string
+  precoCusto: number
+  precoVenda: number
+  estoque: number
+  status: string
+  foto: string
+}
 
 export default function Produtos() {
   const [searchTerm, setSearchTerm] = useState("")
+  const { toast } = useToast()
   
-  const mockProdutos = [
+  const [produtos, setProdutos] = useState<Produto[]>([
     {
       id: 1,
       nome: "Blusa Feminina Básica",
@@ -41,12 +55,48 @@ export default function Produtos() {
       status: "ativo",
       foto: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&h=300&fit=crop"
     }
-  ]
+  ])
 
-  const filteredProdutos = mockProdutos.filter(produto =>
+  const filteredProdutos = produtos.filter(produto =>
     produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     produto.categoria.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleEdit = (produto: Produto) => {
+    console.log("Editando produto:", produto)
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: `Edição do produto ${produto.nome} será implementada em breve.`,
+    })
+  }
+
+  const handleEstoque = (produto: Produto) => {
+    console.log("Gerenciando estoque do produto:", produto)
+    toast({
+      title: "Estoque atualizado",
+      description: `Estoque do produto ${produto.nome} foi consultado.`,
+    })
+  }
+
+  const handleDelete = (produto: Produto) => {
+    setProdutos(prev => prev.filter(p => p.id !== produto.id))
+    toast({
+      title: "Produto excluído",
+      description: `O produto ${produto.nome} foi removido com sucesso.`,
+      variant: "destructive"
+    })
+  }
+
+  const handleStatusToggle = (produto: Produto) => {
+    const newStatus = produto.status === "ativo" ? "inativo" : "ativo"
+    setProdutos(prev => prev.map(p => 
+      p.id === produto.id ? { ...p, status: newStatus } : p
+    ))
+    toast({
+      title: "Status atualizado",
+      description: `Produto ${produto.nome} está agora ${newStatus}.`,
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -99,9 +149,15 @@ export default function Produtos() {
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
                   <h3 className="font-semibold text-lg">{produto.nome}</h3>
-                  <Badge variant={produto.status === "ativo" ? "default" : "secondary"}>
-                    {produto.status}
-                  </Badge>
+                  <div className="flex gap-2">
+                    <Badge 
+                      variant={produto.status === "ativo" ? "default" : "secondary"}
+                      className="cursor-pointer"
+                      onClick={() => handleStatusToggle(produto)}
+                    >
+                      {produto.status}
+                    </Badge>
+                  </div>
                 </div>
                 
                 <p className="text-sm text-muted-foreground">{produto.categoria}</p>
@@ -120,20 +176,71 @@ export default function Produtos() {
                 </div>
                 
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => handleEdit(produto)}
+                  >
                     <Edit className="w-4 h-4 mr-2" />
                     Editar
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => handleEstoque(produto)}
+                  >
                     <Package className="w-4 h-4 mr-2" />
                     Estoque
                   </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir o produto "{produto.nome}"? Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(produto)} className="bg-destructive hover:bg-destructive/90">
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {filteredProdutos.length === 0 && (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchTerm ? 'Tente alterar os filtros de busca.' : 'Comece adicionando seu primeiro produto.'}
+            </p>
+            {!searchTerm && (
+              <Button asChild>
+                <Link to="/produtos/novo">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Produto
+                </Link>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
