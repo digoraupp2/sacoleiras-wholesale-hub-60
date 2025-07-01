@@ -11,10 +11,10 @@ import { supabase } from "@/integrations/supabase/client"
 interface Sacoleira {
   id: string
   nome: string
-  cpf: string
-  telefone: string
-  email: string
-  endereco: string
+  cpf: string | null
+  telefone: string | null
+  email: string | null
+  endereco: string | null
   status: string
   produtosEmPosse: number
   valorEmPosse: number
@@ -32,6 +32,7 @@ export default function Sacoleiras() {
 
   const fetchSacoleiras = async () => {
     try {
+      console.log('Fetching sacoleiras...');
       const { data, error } = await supabase
         .from('sacoleiras')
         .select('*')
@@ -42,35 +43,53 @@ export default function Sacoleiras() {
         return
       }
 
+      console.log('Sacoleiras found:', data?.length || 0);
+
       // Para cada sacoleira, buscar informações de estoque
       const sacoleirasWithEstoque = await Promise.all(
         (data || []).map(async (sacoleira) => {
-          const { data: estoque } = await supabase
-            .from('estoque_sacoleiras')
-            .select('quantidade_estoque, valor_estoque')
-            .eq('sacoleira_id', sacoleira.id)
+          try {
+            const { data: estoque } = await supabase
+              .from('estoque_sacoleiras')
+              .select('quantidade_estoque, valor_estoque')
+              .eq('sacoleira_id', sacoleira.id)
 
-          const { data: ultimaMovimentacao } = await supabase
-            .from('movimentacoes')
-            .select('data_movimentacao')
-            .eq('sacoleira_id', sacoleira.id)
-            .order('data_movimentacao', { ascending: false })
-            .limit(1)
+            const { data: ultimaMovimentacao } = await supabase
+              .from('movimentacoes')
+              .select('data_movimentacao')
+              .eq('sacoleira_id', sacoleira.id)
+              .order('data_movimentacao', { ascending: false })
+              .limit(1)
 
-          const totalProdutos = estoque?.reduce((sum, item) => sum + item.quantidade_estoque, 0) || 0
-          const totalValor = estoque?.reduce((sum, item) => sum + item.valor_estoque, 0) || 0
+            const totalProdutos = estoque?.reduce((sum, item) => sum + (item.quantidade_estoque || 0), 0) || 0
+            const totalValor = estoque?.reduce((sum, item) => sum + (item.valor_estoque || 0), 0) || 0
 
-          return {
-            id: sacoleira.id,
-            nome: sacoleira.nome,
-            cpf: sacoleira.cpf || "000.000.000-00",
-            telefone: sacoleira.telefone || "Não informado",
-            email: sacoleira.email || "email@exemplo.com",
-            endereco: sacoleira.endereco || "Não informado",
-            status: totalProdutos > 0 ? "ativa" : "inativa",
-            produtosEmPosse: totalProdutos,
-            valorEmPosse: totalValor,
-            ultimaMovimentacao: ultimaMovimentacao?.[0]?.data_movimentacao || "Nunca"
+            return {
+              id: sacoleira.id,
+              nome: sacoleira.nome,
+              cpf: sacoleira.cpf || null,
+              telefone: sacoleira.telefone || null,
+              email: sacoleira.email || null,
+              endereco: sacoleira.endereco || null,
+              status: totalProdutos > 0 ? "ativa" : "inativa",
+              produtosEmPosse: totalProdutos,
+              valorEmPosse: totalValor,
+              ultimaMovimentacao: ultimaMovimentacao?.[0]?.data_movimentacao || "Nunca"
+            }
+          } catch (error) {
+            console.error('Error processing sacoleira:', sacoleira.id, error);
+            return {
+              id: sacoleira.id,
+              nome: sacoleira.nome,
+              cpf: sacoleira.cpf || null,
+              telefone: sacoleira.telefone || null,
+              email: sacoleira.email || null,
+              endereco: sacoleira.endereco || null,
+              status: "inativa",
+              produtosEmPosse: 0,
+              valorEmPosse: 0,
+              ultimaMovimentacao: "Nunca"
+            }
           }
         })
       )
@@ -85,8 +104,8 @@ export default function Sacoleiras() {
 
   const filteredSacoleiras = sacoleiras.filter(sacoleira =>
     sacoleira.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sacoleira.cpf.includes(searchTerm) ||
-    sacoleira.telefone.includes(searchTerm)
+    (sacoleira.cpf && sacoleira.cpf.includes(searchTerm)) ||
+    (sacoleira.telefone && sacoleira.telefone.includes(searchTerm))
   )
 
   const handleUpdateSacoleira = (updatedSacoleira: Sacoleira) => {

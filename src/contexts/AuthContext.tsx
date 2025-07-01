@@ -34,8 +34,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = userProfile?.tipo_usuario === 'admin';
 
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      console.log('Fetching user profile for:', userId);
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      console.log('User profile fetched:', profile);
+      if (profile) {
+        // Validate and cast the tipo_usuario field
+        const validatedProfile: UserProfile = {
+          ...profile,
+          tipo_usuario: (profile.tipo_usuario === 'admin' || profile.tipo_usuario === 'sacoleira') 
+            ? profile.tipo_usuario as 'admin' | 'sacoleira'
+            : 'sacoleira' // Default fallback
+        };
+        return validatedProfile;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    // Set up auth state listener
+    console.log('Setting up auth state listener');
+    
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
@@ -43,103 +77,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            try {
-              const { data: profile } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-              
-              console.log('User profile:', profile);
-              if (profile) {
-                // Validate and cast the tipo_usuario field
-                const validatedProfile: UserProfile = {
-                  ...profile,
-                  tipo_usuario: (profile.tipo_usuario === 'admin' || profile.tipo_usuario === 'sacoleira') 
-                    ? profile.tipo_usuario as 'admin' | 'sacoleira'
-                    : 'sacoleira' // Default fallback
-                };
-                setUserProfile(validatedProfile);
-              }
-            } catch (error) {
-              console.error('Error fetching user profile:', error);
-            }
-          }, 0);
+          // Fetch user profile after auth state changes
+          const profile = await fetchUserProfile(session.user.id);
+          setUserProfile(profile);
         } else {
           setUserProfile(null);
         }
         
-        setLoading(false);
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setLoading(false);
+        }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Then check for existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        setTimeout(async () => {
-          try {
-            const { data: profile } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (profile) {
-              // Validate and cast the tipo_usuario field
-              const validatedProfile: UserProfile = {
-                ...profile,
-                tipo_usuario: (profile.tipo_usuario === 'admin' || profile.tipo_usuario === 'sacoleira') 
-                  ? profile.tipo_usuario as 'admin' | 'sacoleira'
-                  : 'sacoleira' // Default fallback
-              };
-              setUserProfile(validatedProfile);
-            }
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-          }
-          setLoading(false);
-        }, 0);
-      } else {
-        setLoading(false);
+        const profile = await fetchUserProfile(session.user.id);
+        setUserProfile(profile);
       }
+      
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      console.log('Attempting to sign in:', email);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error);
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('Sign in catch error:', error);
+      return { error };
+    }
   };
 
   const signUp = async (email: string, password: string, nome: string, tipoUsuario: 'admin' | 'sacoleira') => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          nome,
-          tipo_usuario: tipoUsuario,
+    try {
+      console.log('Attempting to sign up:', email, nome, tipoUsuario);
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            nome,
+            tipo_usuario: tipoUsuario,
+          }
         }
+      });
+      
+      if (error) {
+        console.error('Sign up error:', error);
       }
-    });
-    
-    return { error };
+      
+      return { error };
+    } catch (error) {
+      console.error('Sign up catch error:', error);
+      return { error };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('Signing out');
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   const value = {
