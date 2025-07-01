@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -7,13 +8,25 @@ import { EstoqueCard } from "@/components/EstoqueCard"
 import { EstoqueEmpty } from "@/components/EstoqueEmpty"
 import { useEstoque } from "@/hooks/useEstoque"
 
+interface MockProduto {
+  id: number
+  nome: string
+  categoria: string
+  precoVenda: number
+}
+
+interface MockSacoleira {
+  id: number
+  nome: string
+}
+
 export default function EstoqueSacoleiras() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filtroCategoria, setFiltroCategoria] = useState("todas")
   const [filtroSacoleira, setFiltroSacoleira] = useState("todas")
 
-  const mockProdutos = [
+  const mockProdutos: MockProduto[] = [
     { id: 1, nome: "Blusa Feminina Básica", categoria: "Roupas Femininas", precoVenda: 35.00 },
     { id: 2, nome: "Calça Jeans Masculina", categoria: "Roupas Masculinas", precoVenda: 89.90 },
     { id: 3, nome: "Vestido Floral", categoria: "Roupas Femininas", precoVenda: 59.90 },
@@ -22,7 +35,7 @@ export default function EstoqueSacoleiras() {
     { id: 6, nome: "Moleton Básico", categoria: "Roupas Unissex", precoVenda: 45.00 }
   ]
 
-  const mockSacoleiras = [
+  const mockSacoleiras: MockSacoleira[] = [
     { id: 1, nome: "Maria Silva" },
     { id: 2, nome: "Ana Santos" },
     { id: 3, nome: "Carla Oliveira" },

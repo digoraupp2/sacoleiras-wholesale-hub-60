@@ -9,6 +9,18 @@ import { EstoqueEmpty } from "@/components/EstoqueEmpty"
 import { useEstoque } from "@/hooks/useEstoque"
 import { useAuth } from "@/contexts/AuthContext"
 
+interface MockProduto {
+  id: number
+  nome: string
+  categoria: string
+  precoVenda: number
+}
+
+interface MockSacoleira {
+  id: number
+  nome: string
+}
+
 export function EstoqueContent() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -16,7 +28,7 @@ export function EstoqueContent() {
   const [filtroSacoleira, setFiltroSacoleira] = useState("todas")
   const { isAdmin } = useAuth()
 
-  const mockProdutos = [
+  const mockProdutos: MockProduto[] = [
     { id: 1, nome: "Blusa Feminina Básica", categoria: "Roupas Femininas", precoVenda: 35.00 },
     { id: 2, nome: "Calça Jeans Masculina", categoria: "Roupas Masculinas", precoVenda: 89.90 },
     { id: 3, nome: "Vestido Floral", categoria: "Roupas Femininas", precoVenda: 59.90 },
@@ -25,7 +37,7 @@ export function EstoqueContent() {
     { id: 6, nome: "Moleton Básico", categoria: "Roupas Unissex", precoVenda: 45.00 }
   ]
 
-  const mockSacoleiras = [
+  const mockSacoleiras: MockSacoleira[] = [
     { id: 1, nome: "Maria Silva" },
     { id: 2, nome: "Ana Santos" },
     { id: 3, nome: "Carla Oliveira" },

@@ -33,7 +33,7 @@ export function EstoqueRealContent() {
   const categorias = [...new Set(produtos.map(p => p.categoria))];
 
   // Filter estoque based on search and filters
-  const estoqueFiltered = Object.entries(estoqueGrouped).filter(([sacoleira, produtos]) => {
+  const estoqueFiltered = Object.entries(estoqueGrouped).filter(([sacoleira, produtosEstoque]) => {
     const matchesSearch = sacoleira.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSacoleira = filtroSacoleira === "todas" || sacoleira === filtroSacoleira;
     
@@ -41,8 +41,8 @@ export function EstoqueRealContent() {
       return matchesSearch && matchesSacoleira;
     }
     
-    const hasProductsInCategory = Object.keys(produtos).some(produto => {
-      const produtoInfo = produtos.find(p => p.nome === produto);
+    const hasProductsInCategory = Object.keys(produtosEstoque).some(produtoNome => {
+      const produtoInfo = produtos.find(p => p.nome === produtoNome);
       return produtoInfo?.categoria === filtroCategoria;
     });
     
@@ -120,11 +120,11 @@ export function EstoqueRealContent() {
       />
 
       <div className="space-y-4">
-        {estoqueFiltered.map(([sacoleira, produtos]) => (
+        {estoqueFiltered.map(([sacoleira, produtosEstoque]) => (
           <EstoqueCard
             key={sacoleira}
             sacoleira={sacoleira}
-            produtos={produtos}
+            produtos={produtosEstoque}
             mockProdutos={produtos}
           />
         ))}
