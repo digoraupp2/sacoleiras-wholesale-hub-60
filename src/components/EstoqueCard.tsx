@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, Package } from "lucide-react"
 
-interface Produto {
-  id: string
+interface BaseProduto {
+  id: string | number
   nome: string
   categoria: string
   precoVenda: number
@@ -13,7 +13,7 @@ interface Produto {
 interface EstoqueCardProps {
   sacoleira: string
   produtos: { [produto: string]: number }
-  mockProdutos: Produto[]
+  mockProdutos: BaseProduto[]
 }
 
 export function EstoqueCard({ sacoleira, produtos, mockProdutos }: EstoqueCardProps) {

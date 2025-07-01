@@ -4,8 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface Sacoleira {
-  id: number
+interface BaseSacoleira {
+  id: string | number
   nome: string
 }
 
@@ -17,7 +17,7 @@ interface EstoqueFiltersProps {
   filtroSacoleira: string
   setFiltroSacoleira: (value: string) => void
   categorias: string[]
-  sacoleiras: Sacoleira[]
+  sacoleiras: BaseSacoleira[]
 }
 
 export function EstoqueFilters({
