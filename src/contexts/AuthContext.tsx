@@ -31,9 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result;
   };
 
-  const signUp = async (email: string, password: string, nome: string, tipoUsuario: 'admin' | 'sacoleira', adminPassword?: string) => {
+  const signUp = async (email: string, password: string, nome: string, tipoUsuario: 'admin' | 'sacoleira') => {
     setLoading(true);
-    const result = await authSignUp(email, password, nome, tipoUsuario, adminPassword);
+    const result = await authSignUp(email, password, nome, tipoUsuario);
     setLoading(false);
     return result;
   };

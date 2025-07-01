@@ -51,7 +51,6 @@ export function useLancamentoSubmission() {
         valor_unitario: Number(formData.valor_unitario),
         valor_total: Number(formData.valor_total),
         observacoes: formData.observacoes || null,
-        pagamento: Boolean(formData.pagamento),
         data_lancamento: formData.data_lancamento || new Date().toISOString()
       }
       
@@ -68,7 +67,6 @@ export function useLancamentoSubmission() {
           valor_unitario,
           valor_total,
           observacoes,
-          pagamento,
           data_lancamento,
           produto_id,
           sacoleira_id
@@ -122,18 +120,16 @@ export function useLancamentoSubmission() {
         data: data.data_lancamento || new Date().toISOString(),
         total: Number(data.valor_total || 0),
         observacoes: data.observacoes || '',
-        tipo: data.tipo,
-        pagamento: data.pagamento || false
+        tipo: data.tipo
       }
       
       console.log("Lançamento criado:", novoLancamento)
       
       const tipoTexto = tipoCorrigido === 'entrega' ? 'entregue' : 'devolvido'
-      const pagamentoTexto = data.pagamento ? ' (PAGO)' : ''
       
       toast({
         title: "Lançamento criado com sucesso!",
-        description: `${produtoResponse.data?.nome || 'Produto'} foi ${tipoTexto} para ${sacoleiraResponse.data?.nome || 'sacoleira'}${pagamentoTexto}`,
+        description: `${produtoResponse.data?.nome || 'Produto'} foi ${tipoTexto} para ${sacoleiraResponse.data?.nome || 'sacoleira'}`,
       })
 
       return novoLancamento

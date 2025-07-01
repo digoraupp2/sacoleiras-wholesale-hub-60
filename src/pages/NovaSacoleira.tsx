@@ -8,7 +8,6 @@ import { ArrowLeft } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { createUserForSacoleira } from "@/utils/userCreation"
 
 export default function NovaSacoleira() {
   const navigate = useNavigate()
@@ -28,9 +27,6 @@ export default function NovaSacoleira() {
     setLoading(true)
 
     try {
-      console.log('Creating sacoleira:', formData.nome)
-      
-      // Primeiro, criar a sacoleira
       const { data, error } = await supabase
         .from('sacoleiras')
         .insert([
@@ -55,31 +51,10 @@ export default function NovaSacoleira() {
       }
 
       console.log("Sacoleira cadastrada:", data)
-      
-      // Agora criar o usuário automaticamente
-      if (data && data[0]) {
-        const sacoleiraId = data[0].id
-        console.log('Creating user for sacoleira ID:', sacoleiraId)
-        
-        const userResult = await createUserForSacoleira(formData.nome, sacoleiraId)
-        
-        if (userResult.success) {
-          toast({
-            title: "Sucesso",
-            description: `Sacoleira cadastrada com sucesso! Login criado: ${userResult.email}`,
-          })
-          console.log('User created with email:', userResult.email)
-        } else {
-          // Sacoleira foi criada, mas houve erro na criação do usuário
-          toast({
-            title: "Sacoleira cadastrada",
-            description: "Sacoleira criada, mas houve erro na criação do login. Verifique com o administrador.",
-            variant: "destructive"
-          })
-          console.error('Error creating user:', userResult.error)
-        }
-      }
-      
+      toast({
+        title: "Sucesso",
+        description: "Sacoleira cadastrada com sucesso!"
+      })
       navigate("/sacoleiras")
     } catch (error) {
       console.error('Erro ao cadastrar sacoleira:', error)
