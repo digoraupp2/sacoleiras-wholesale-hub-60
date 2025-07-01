@@ -35,8 +35,6 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
 
   const categorias = [...new Set(produtos.map(p => p.categoria))]
 
-  // Os lançamentos já vêm filtrados do hook useLancamentosData baseado no tipo de usuário
-  // Não precisamos filtrar novamente aqui
   const filteredLancamentos = lancamentos.filter(lancamento => {
     const matchesSearch = lancamento.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lancamento.sacoleira.toLowerCase().includes(searchTerm.toLowerCase())
@@ -52,15 +50,23 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
     }
   }
 
+  const handleNewLancamento = () => {
+    if (!isAdmin) {
+      // Para usuários SACOLEIRA, verificar se eles têm permissão
+      console.log("Usuário SACOLEIRA criando lançamento")
+    }
+    setShowForm(true)
+  }
+
   if (loading) {
     return <LancamentosLoading />
   }
 
   return (
     <div className="space-y-6">
-      <LancamentosHeader onNewLancamento={() => setShowForm(true)} />
+      <LancamentosHeader onNewLancamento={handleNewLancamento} />
 
-      {showForm && isAdmin && (
+      {showForm && (
         <LancamentoForm
           onSubmit={handleFormSubmit}
           onCancel={() => setShowForm(false)}

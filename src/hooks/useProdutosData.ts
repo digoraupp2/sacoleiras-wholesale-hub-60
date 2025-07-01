@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Produto {
   id: string
@@ -18,6 +19,7 @@ export function useProdutosData() {
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const { isAdmin } = useAuth()
 
   const fetchProdutos = async () => {
     try {
@@ -75,6 +77,15 @@ export function useProdutosData() {
   }
 
   const deleteProduto = async (produtoId: string) => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso negado",
+        description: "Você não tem permissão para excluir produtos.",
+        variant: "destructive"
+      })
+      return false
+    }
+
     try {
       const { error } = await supabase
         .from('produtos')

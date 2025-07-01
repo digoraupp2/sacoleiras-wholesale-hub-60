@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ import { Link } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useProdutosData } from "@/hooks/useProdutosData"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Produto {
   id: string
@@ -24,6 +26,7 @@ export default function Produtos() {
   const [searchTerm, setSearchTerm] = useState("")
   const { produtos, loading, deleteProduto } = useProdutosData()
   const { toast } = useToast()
+  const { isAdmin } = useAuth()
 
   const filteredProdutos = produtos.filter(produto =>
     produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -31,6 +34,14 @@ export default function Produtos() {
   )
 
   const handleEdit = (produto: any) => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso negado",
+        description: "Você não tem permissão para editar produtos.",
+        variant: "destructive"
+      })
+      return
+    }
     console.log("Editando produto:", produto)
     toast({
       title: "Funcionalidade em desenvolvimento",
@@ -47,6 +58,14 @@ export default function Produtos() {
   }
 
   const handleDelete = async (produto: any) => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso negado",
+        description: "Você não tem permissão para excluir produtos.",
+        variant: "destructive"
+      })
+      return
+    }
     const success = await deleteProduto(produto.id)
     if (success) {
       toast({
@@ -58,6 +77,14 @@ export default function Produtos() {
   }
 
   const handleStatusToggle = (produto: any) => {
+    if (!isAdmin) {
+      toast({
+        title: "Acesso negado",
+        description: "Você não tem permissão para alterar o status dos produtos.",
+        variant: "destructive"
+      })
+      return
+    }
     // Esta funcionalidade precisa ser implementada no backend
     toast({
       title: "Funcionalidade em desenvolvimento",
@@ -82,12 +109,14 @@ export default function Produtos() {
           <h1 className="text-3xl font-bold">Produtos</h1>
           <p className="text-muted-foreground">Gerencie seu catálogo de produtos</p>
         </div>
-        <Button asChild className="bg-primary hover:bg-primary/90">
-          <Link to="/produtos/novo">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Produto
-          </Link>
-        </Button>
+        {isAdmin && (
+          <Button asChild className="bg-primary hover:bg-primary/90">
+            <Link to="/produtos/novo">
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Produto
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Filtros e busca */}
@@ -129,8 +158,8 @@ export default function Produtos() {
                   <div className="flex gap-2">
                     <Badge 
                       variant={produto.status === "ativo" ? "default" : "secondary"}
-                      className="cursor-pointer"
-                      onClick={() => handleStatusToggle(produto)}
+                      className={isAdmin ? "cursor-pointer" : ""}
+                      onClick={isAdmin ? () => handleStatusToggle(produto) : undefined}
                     >
                       {produto.status}
                     </Badge>
@@ -153,15 +182,17 @@ export default function Produtos() {
                 </div>
                 
                 <div className="flex gap-2 pt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => handleEdit(produto)}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Editar
-                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleEdit(produto)}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Editar
+                    </Button>
+                  )}
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -171,27 +202,29 @@ export default function Produtos() {
                     <Package className="w-4 h-4 mr-2" />
                     Estoque
                   </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja excluir o produto "{produto.nome}"? Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(produto)} className="bg-destructive hover:bg-destructive/90">
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {isAdmin && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir o produto "{produto.nome}"? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(produto)} className="bg-destructive hover:bg-destructive/90">
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -207,7 +240,7 @@ export default function Produtos() {
             <p className="text-muted-foreground mb-4">
               {searchTerm ? 'Tente alterar os filtros de busca.' : 'Comece adicionando seu primeiro produto.'}
             </p>
-            {!searchTerm && (
+            {!searchTerm && isAdmin && (
               <Button asChild>
                 <Link to="/produtos/novo">
                   <Plus className="w-4 h-4 mr-2" />
