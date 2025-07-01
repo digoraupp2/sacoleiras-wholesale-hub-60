@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,7 +43,8 @@ export const useAuthState = () => {
             setUserProfile(null);
           } else {
             console.log('User profile created:', newProfile);
-            setUserProfile(newProfile);
+            // Type assertion to ensure compatibility with UserProfile type
+            setUserProfile(newProfile as UserProfile);
           }
         } else {
           setUserProfile(null);
@@ -53,7 +53,8 @@ export const useAuthState = () => {
       }
 
       console.log('User profile fetched:', data);
-      setUserProfile(data);
+      // Type assertion to ensure compatibility with UserProfile type
+      setUserProfile(data as UserProfile);
     } catch (error) {
       console.error('Unexpected error fetching user profile:', error);
       setUserProfile(null);
