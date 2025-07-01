@@ -114,12 +114,13 @@ export function ExtractSacoleiraDialog({ sacoleira, isOpen, onClose }: ExtractSa
     }
   }
 
+  // Corrigindo os cálculos dos totais - usando os tipos corretos do banco de dados
   const totalEntradas = movimentacoes
-    .filter(mov => mov.tipo_movimentacao === 'entrada')
+    .filter(mov => mov.tipo_movimentacao === 'entrega')
     .reduce((sum, mov) => sum + (mov.quantidade * mov.valor_unitario), 0)
 
   const totalSaidas = movimentacoes
-    .filter(mov => mov.tipo_movimentacao === 'saida')
+    .filter(mov => mov.tipo_movimentacao === 'devolucao')
     .reduce((sum, mov) => sum + (mov.quantidade * mov.valor_unitario), 0)
 
   const totalProdutosEmEstoque = estoque.reduce((sum, item) => sum + item.quantidade_estoque, 0)
@@ -146,7 +147,7 @@ export function ExtractSacoleiraDialog({ sacoleira, isOpen, onClose }: ExtractSa
             <Card>
               <CardContent className="p-4 text-center">
                 <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                <p className="text-sm text-muted-foreground">Total Entradas</p>
+                <p className="text-sm text-muted-foreground">Total Entregas</p>
                 <p className="text-2xl font-bold text-green-600">R$ {totalEntradas.toFixed(2)}</p>
               </CardContent>
             </Card>
@@ -154,7 +155,7 @@ export function ExtractSacoleiraDialog({ sacoleira, isOpen, onClose }: ExtractSa
             <Card>
               <CardContent className="p-4 text-center">
                 <TrendingDown className="w-8 h-8 mx-auto mb-2 text-red-500" />
-                <p className="text-sm text-muted-foreground">Total Saídas</p>
+                <p className="text-sm text-muted-foreground">Total Devoluções</p>
                 <p className="text-2xl font-bold text-red-600">R$ {totalSaidas.toFixed(2)}</p>
               </CardContent>
             </Card>
@@ -226,8 +227,8 @@ export function ExtractSacoleiraDialog({ sacoleira, isOpen, onClose }: ExtractSa
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge variant={movimentacao.tipo_movimentacao === "entrada" ? "default" : "secondary"}>
-                              {movimentacao.tipo_movimentacao === "entrada" ? "Entrada" : "Saída"}
+                            <Badge variant={movimentacao.tipo_movimentacao === "entrega" ? "default" : "secondary"}>
+                              {movimentacao.tipo_movimentacao === "entrega" ? "Entrega" : "Devolução"}
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Calendar className="w-4 h-4" />
@@ -246,9 +247,9 @@ export function ExtractSacoleiraDialog({ sacoleira, isOpen, onClose }: ExtractSa
                         </div>
                         <div className="text-right">
                           <p className={`text-lg font-bold ${
-                            movimentacao.tipo_movimentacao === "entrada" ? "text-green-600" : "text-red-600"
+                            movimentacao.tipo_movimentacao === "entrega" ? "text-green-600" : "text-red-600"
                           }`}>
-                            {movimentacao.tipo_movimentacao === "entrada" ? "+" : "-"}R$ {(movimentacao.quantidade * movimentacao.valor_unitario).toFixed(2)}
+                            {movimentacao.tipo_movimentacao === "entrega" ? "+" : "-"}R$ {(movimentacao.quantidade * movimentacao.valor_unitario).toFixed(2)}
                           </p>
                         </div>
                       </div>
