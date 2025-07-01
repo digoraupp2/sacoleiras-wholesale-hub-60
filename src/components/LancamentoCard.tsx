@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Package, Calendar, User, FileText, ArrowUp, ArrowDown } from "lucide-react"
+import { Package, Calendar, User, FileText, ArrowUp, ArrowDown, Check, X } from "lucide-react"
 import { Lancamento } from "@/types/lancamento"
 
 interface LancamentoCardProps {
@@ -50,9 +50,31 @@ export function LancamentoCard({ lancamento }: LancamentoCardProps) {
             )}
             <div>
               <CardTitle className="text-lg">{lancamento.produto}</CardTitle>
-              <Badge variant={isEntrega ? "default" : "destructive"} className="mt-1">
-                {isEntrega ? "Entrega" : "Devolução"}
-              </Badge>
+              <div className="flex gap-2 mt-1">
+                <Badge variant={isEntrega ? "default" : "destructive"}>
+                  {isEntrega ? "Entrega" : "Devolução"}
+                </Badge>
+                {lancamento.pagamento !== undefined && (
+                  <Badge 
+                    variant={lancamento.pagamento ? "default" : "secondary"}
+                    className={lancamento.pagamento ? "bg-green-500 hover:bg-green-600" : "bg-gray-500 hover:bg-gray-600"}
+                  >
+                    <div className="flex items-center gap-1">
+                      {lancamento.pagamento ? (
+                        <>
+                          <Check className="w-3 h-3" />
+                          Pago
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-3 h-3" />
+                          Não Pago
+                        </>
+                      )}
+                    </div>
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
           <Badge variant="outline">{lancamento.categoria}</Badge>

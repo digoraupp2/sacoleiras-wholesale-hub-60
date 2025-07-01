@@ -12,6 +12,7 @@ export interface Lancamento {
   total: number
   observacoes?: string
   tipo?: string
+  pagamento?: boolean
 }
 
 export interface Produto {

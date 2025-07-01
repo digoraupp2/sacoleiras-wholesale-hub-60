@@ -119,6 +119,7 @@ export function useLancamentosData() {
           valor_unitario,
           valor_total,
           observacoes,
+          pagamento,
           data_lancamento,
           produto_id,
           sacoleira_id
@@ -176,7 +177,8 @@ export function useLancamentosData() {
           data: lancamento.data_lancamento || new Date().toISOString(),
           total: Number(lancamento.valor_total || 0),
           observacoes: lancamento.observacoes || '',
-          tipo: lancamento.tipo || ''
+          tipo: lancamento.tipo || '',
+          pagamento: lancamento.pagamento || false
         }
       })
       
