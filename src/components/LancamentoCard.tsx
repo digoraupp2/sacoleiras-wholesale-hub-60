@@ -1,20 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Package, Calendar, User, FileText, ArrowUp, ArrowDown } from "lucide-react"
-
-interface Lancamento {
-  id: string
-  produto: string
-  valor: number
-  quantidade: number
-  categoria: string
-  sacoleira: string
-  data: string
-  total: number
-  observacoes?: string
-  tipo?: string
-}
+import { Lancamento } from "@/types/lancamento"
 
 interface LancamentoCardProps {
   lancamento: Lancamento

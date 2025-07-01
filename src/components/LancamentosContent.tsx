@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -8,33 +7,7 @@ import { LancamentoCard } from "@/components/LancamentoCard"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-
-interface Lancamento {
-  id: string
-  produto: string
-  produto_id: string
-  valor: number
-  quantidade: number
-  categoria: string
-  sacoleira: string
-  sacoleira_id: string
-  data: string
-  total: number
-  observacoes?: string
-  tipo?: string
-}
-
-interface Produto {
-  id: string
-  nome: string
-  preco_base: number
-  categoria: string
-}
-
-interface Sacoleira {
-  id: string
-  nome: string
-}
+import { Lancamento, Produto, Sacoleira } from "@/types/lancamento"
 
 interface LancamentosContentProps {
   lancamentos: Lancamento[]

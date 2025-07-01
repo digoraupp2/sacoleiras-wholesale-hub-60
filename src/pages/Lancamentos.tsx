@@ -3,21 +3,7 @@ import { useState } from "react"
 import { LancamentosTabs } from "@/components/LancamentosTabs"
 import { LancamentosContent } from "@/components/LancamentosContent"
 import { EstoqueContent } from "@/components/EstoqueContent"
-
-interface Lancamento {
-  id: string
-  produto: string
-  produto_id: string
-  valor: number
-  quantidade: number
-  categoria: string
-  sacoleira: string
-  sacoleira_id: string
-  data: string
-  total: number
-  observacoes?: string
-  tipo?: string
-}
+import { Lancamento } from "@/types/lancamento"
 
 export default function Lancamentos() {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([])
