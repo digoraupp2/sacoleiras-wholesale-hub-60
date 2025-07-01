@@ -30,6 +30,7 @@ const allNavigationItems = [
   { title: "Produtos", url: "/produtos", icon: Package, adminOnly: false },
   { title: "Categorias", url: "/categorias", icon: Tag, adminOnly: true },
   { title: "Sacoleiras", url: "/sacoleiras", icon: Users, adminOnly: true },
+  { title: "Estoque", url: "/estoque", icon: Warehouse, adminOnly: false },
   { title: "Lançamentos", url: "/lancamentos", icon: FileText, adminOnly: false },
 ]
 

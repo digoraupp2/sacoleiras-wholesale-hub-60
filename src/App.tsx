@@ -13,6 +13,7 @@ import NovoProduto from "./pages/NovoProduto";
 import Categorias from "./pages/Categorias";
 import Sacoleiras from "./pages/Sacoleiras";
 import NovaSacoleira from "./pages/NovaSacoleira";
+import Estoque from "./pages/Estoque";
 import Lancamentos from "./pages/Lancamentos";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -67,6 +68,13 @@ const App = () => (
               <ProtectedRoute requireAdmin>
                 <Layout>
                   <NovaSacoleira />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/estoque" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Estoque />
                 </Layout>
               </ProtectedRoute>
             } />
