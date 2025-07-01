@@ -8,14 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { X } from "lucide-react"
 
 interface Produto {
-  id: number
+  id: string
   nome: string
   categoria: string
   precoVenda: number
 }
 
 interface Sacoleira {
-  id: number
+  id: string
   nome: string
 }
 
@@ -32,8 +32,8 @@ export function MovimentacaoForm({ onSubmit, onCancel, produtos, sacoleiras }: M
   const [tipo, setTipo] = useState("")
   const [quantidade, setQuantidade] = useState("")
 
-  const produtoSelecionado = produtos.find(p => p.id.toString() === produtoId)
-  const sacoleiraSelecionada = sacoleiras.find(s => s.id.toString() === sacoleiraId)
+  const produtoSelecionado = produtos.find(p => p.id === produtoId)
+  const sacoleiraSelecionada = sacoleiras.find(s => s.id === sacoleiraId)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,7 +75,7 @@ export function MovimentacaoForm({ onSubmit, onCancel, produtos, sacoleiras }: M
                 </SelectTrigger>
                 <SelectContent>
                   {produtos.map(produto => (
-                    <SelectItem key={produto.id} value={produto.id.toString()}>
+                    <SelectItem key={produto.id} value={produto.id}>
                       {produto.nome}
                     </SelectItem>
                   ))}
@@ -91,7 +91,7 @@ export function MovimentacaoForm({ onSubmit, onCancel, produtos, sacoleiras }: M
                 </SelectTrigger>
                 <SelectContent>
                   {sacoleiras.map(sacoleira => (
-                    <SelectItem key={sacoleira.id} value={sacoleira.id.toString()}>
+                    <SelectItem key={sacoleira.id} value={sacoleira.id}>
                       {sacoleira.nome}
                     </SelectItem>
                   ))}

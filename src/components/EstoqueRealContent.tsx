@@ -10,7 +10,7 @@ import { EstoqueEmpty } from "@/components/EstoqueEmpty";
 import { useEstoqueData } from "@/hooks/useEstoqueData";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Interface para manter compatibilidade com os componentes existentes
+// Interface para manter compatibilidade com EstoqueCard
 interface ProdutoFormatado {
   id: string;
   nome: string;
@@ -18,6 +18,7 @@ interface ProdutoFormatado {
   precoVenda: number;
 }
 
+// Interface para manter compatibilidade com EstoqueFilters
 interface SacoleiraFormatada {
   id: string;
   nome: string;
@@ -43,7 +44,7 @@ export function EstoqueRealContent() {
     return acc;
   }, {} as Record<string, Record<string, number>>);
 
-  // Formatar produtos para manter compatibilidade com os tipos existentes
+  // Formatar produtos para manter compatibilidade com EstoqueCard
   const produtosFormatados: ProdutoFormatado[] = produtos.map(produto => ({
     id: produto.id,
     nome: produto.nome,
@@ -51,7 +52,7 @@ export function EstoqueRealContent() {
     precoVenda: produto.precoVenda
   }));
 
-  // Formatar sacoleiras para manter compatibilidade com os tipos existentes
+  // Formatar sacoleiras para manter compatibilidade com EstoqueFilters
   const sacoleirasFormatadas: SacoleiraFormatada[] = sacoleiras.map(sacoleira => ({
     id: sacoleira.id,
     nome: sacoleira.nome
@@ -130,8 +131,8 @@ export function EstoqueRealContent() {
         <MovimentacaoForm
           onSubmit={handleSubmit}
           onCancel={() => setShowForm(false)}
-          produtos={produtosFormatados}
-          sacoleiras={sacoleirasFormatadas}
+          produtos={produtos}
+          sacoleiras={sacoleiras}
         />
       )}
 
