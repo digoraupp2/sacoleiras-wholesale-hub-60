@@ -32,9 +32,9 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
       return;
     }
 
-    // Verificar senha de criação para administradores
-    if (tipo === 'admin' && adminPassword !== '99730168') {
-      setError('Senha de criação de administrador incorreta');
+    // Verificar se é admin e se a senha foi fornecida
+    if (tipo === 'admin' && !adminPassword) {
+      setError('Senha de criação de administrador é obrigatória');
       return;
     }
 
@@ -48,7 +48,7 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
     setSuccess('');
 
     try {
-      const { error } = await signUp(email, password, nome, tipo);
+      const { error } = await signUp(email, password, nome, tipo, adminPassword);
 
       if (error) {
         console.error('Signup error:', error);
@@ -58,6 +58,8 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
           errorMessage = 'Este email já está cadastrado';
         } else if (error.message.includes('Password should be at least')) {
           errorMessage = 'A senha deve ter pelo menos 6 caracteres';
+        } else if (error.message.includes('Senha de criação de administrador incorreta')) {
+          errorMessage = 'Senha de criação de administrador incorreta';
         } else if (error.message) {
           errorMessage = error.message;
         }

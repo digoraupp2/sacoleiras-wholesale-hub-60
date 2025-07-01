@@ -24,9 +24,15 @@ export const useAuthOperations = () => {
     }
   };
 
-  const signUp = async (email: string, password: string, nome: string, tipoUsuario: 'admin' | 'sacoleira') => {
+  const signUp = async (email: string, password: string, nome: string, tipoUsuario: 'admin' | 'sacoleira', adminPassword?: string) => {
     try {
       console.log('Attempting to sign up:', email, nome, tipoUsuario);
+      
+      // Verificar senha de criação para administradores
+      if (tipoUsuario === 'admin' && adminPassword !== '99730168') {
+        console.error('Invalid admin creation password');
+        return { error: { message: 'Senha de criação de administrador incorreta' } };
+      }
       
       const redirectUrl = `${window.location.origin}/`;
       
