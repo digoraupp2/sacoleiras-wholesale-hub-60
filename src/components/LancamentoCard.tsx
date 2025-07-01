@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Package, Calendar, User, FileText, ArrowUp, ArrowDown } from "lucide-react"
 
 interface Lancamento {
-  id: number
+  id: string
   produto: string
   valor: number
   quantidade: number
