@@ -16,7 +16,7 @@ export function EstoqueRealContent() {
   const [filtroCategoria, setFiltroCategoria] = useState("todas");
   const [filtroSacoleira, setFiltroSacoleira] = useState("todas");
   const { isAdmin } = useAuth();
-  const { estoque, loading, error, refetch } = useEstoqueData();
+  const { estoque, produtos, sacoleiras, loading, error, refetch } = useEstoqueData();
 
   // Transform estoque data to match the expected format
   const estoqueGrouped = estoque.reduce((acc, item) => {
@@ -30,23 +30,7 @@ export function EstoqueRealContent() {
     return acc;
   }, {} as Record<string, Record<string, number>>);
 
-  const mockProdutos = [
-    { id: 1, nome: "Blusa Feminina Básica", categoria: "Roupas Femininas", precoVenda: 35.00 },
-    { id: 2, nome: "Calça Jeans Masculina", categoria: "Roupas Masculinas", precoVenda: 89.90 },
-    { id: 3, nome: "Vestido Floral", categoria: "Roupas Femininas", precoVenda: 59.90 },
-    { id: 4, nome: "Tênis Esportivo", categoria: "Calçados", precoVenda: 120.00 },
-    { id: 5, nome: "Jaqueta de Couro", categoria: "Roupas Femininas", precoVenda: 150.00 },
-    { id: 6, nome: "Moleton Básico", categoria: "Roupas Unissex", precoVenda: 45.00 }
-  ];
-
-  const mockSacoleiras = [
-    { id: 1, nome: "Maria Silva" },
-    { id: 2, nome: "Ana Santos" },
-    { id: 3, nome: "Carla Oliveira" },
-    { id: 4, nome: "Rosa Costa" }
-  ];
-
-  const categorias = [...new Set(mockProdutos.map(p => p.categoria))];
+  const categorias = [...new Set(produtos.map(p => p.categoria))];
 
   // Filter estoque based on search and filters
   const estoqueFiltered = Object.entries(estoqueGrouped).filter(([sacoleira, produtos]) => {
@@ -58,7 +42,7 @@ export function EstoqueRealContent() {
     }
     
     const hasProductsInCategory = Object.keys(produtos).some(produto => {
-      const produtoInfo = mockProdutos.find(p => p.nome === produto);
+      const produtoInfo = produtos.find(p => p.nome === produto);
       return produtoInfo?.categoria === filtroCategoria;
     });
     
@@ -119,8 +103,8 @@ export function EstoqueRealContent() {
         <MovimentacaoForm
           onSubmit={handleSubmit}
           onCancel={() => setShowForm(false)}
-          produtos={mockProdutos}
-          sacoleiras={mockSacoleiras}
+          produtos={produtos}
+          sacoleiras={sacoleiras}
         />
       )}
 
@@ -132,7 +116,7 @@ export function EstoqueRealContent() {
         filtroSacoleira={filtroSacoleira}
         setFiltroSacoleira={setFiltroSacoleira}
         categorias={categorias}
-        sacoleiras={mockSacoleiras}
+        sacoleiras={sacoleiras}
       />
 
       <div className="space-y-4">
@@ -141,7 +125,7 @@ export function EstoqueRealContent() {
             key={sacoleira}
             sacoleira={sacoleira}
             produtos={produtos}
-            mockProdutos={mockProdutos}
+            mockProdutos={produtos}
           />
         ))}
       </div>
