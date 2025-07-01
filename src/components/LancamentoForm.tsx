@@ -8,14 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { X } from "lucide-react"
 
 interface Produto {
-  id: number
+  id: string
   nome: string
-  preco: number
+  preco_base: number
   categoria: string
 }
 
 interface Sacoleira {
-  id: number
+  id: string
   nome: string
 }
 
@@ -34,8 +34,8 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
   const [observacoes, setObservacoes] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const produtoSelecionado = produtos.find(p => p.id.toString() === produtoId)
-  const sacoleiraSelecionada = sacoleiras.find(s => s.id.toString() === sacoleiraId)
+  const produtoSelecionado = produtos.find(p => p.id === produtoId)
+  const sacoleiraSelecionada = sacoleiras.find(s => s.id === sacoleiraId)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,15 +54,15 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
     try {
       const novoLancamento = {
         produto: produtoSelecionado.nome,
-        valor: produtoSelecionado.preco,
+        valor: produtoSelecionado.preco_base,
         quantidade: quantidadeNum,
         categoria: produtoSelecionado.categoria,
         sacoleira: sacoleiraSelecionada.nome,
-        sacoleira_id: sacoleiraSelecionada.id.toString(),
+        sacoleira_id: sacoleiraSelecionada.id,
         data: new Date().toISOString().split('T')[0],
-        total: produtoSelecionado.preco * quantidadeNum,
+        total: produtoSelecionado.preco_base * quantidadeNum,
         observacoes: observacoes.trim(),
-        tipo: tipo // Adicionando o tipo (entrega ou devolucao)
+        tipo: tipo
       }
 
       await onSubmit(novoLancamento)
@@ -103,8 +103,8 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
                 </SelectTrigger>
                 <SelectContent>
                   {produtos.map(produto => (
-                    <SelectItem key={produto.id} value={produto.id.toString()}>
-                      {produto.nome} - R$ {produto.preco.toFixed(2)}
+                    <SelectItem key={produto.id} value={produto.id}>
+                      {produto.nome} - R$ {produto.preco_base.toFixed(2)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -119,7 +119,7 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
                 </SelectTrigger>
                 <SelectContent>
                   {sacoleiras.map(sacoleira => (
-                    <SelectItem key={sacoleira.id} value={sacoleira.id.toString()}>
+                    <SelectItem key={sacoleira.id} value={sacoleira.id}>
                       {sacoleira.nome}
                     </SelectItem>
                   ))}
@@ -172,10 +172,10 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
               <h4 className="font-semibold mb-2">Resumo do Lançamento</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>Produto: {produtoSelecionado.nome}</div>
-                <div>Valor unitário: R$ {produtoSelecionado.preco.toFixed(2)}</div>
+                <div>Valor unitário: R$ {produtoSelecionado.preco_base.toFixed(2)}</div>
                 <div>Tipo: {tipo === 'entrega' ? 'Entrega' : 'Devolução'}</div>
                 <div>Quantidade: {quantidade} un.</div>
-                <div className="font-bold">Total: R$ {(produtoSelecionado.preco * parseInt(quantidade)).toFixed(2)}</div>
+                <div className="font-bold">Total: R$ {(produtoSelecionado.preco_base * parseInt(quantidade)).toFixed(2)}</div>
               </div>
               {sacoleiraSelecionada && (
                 <div className="mt-2 text-sm">

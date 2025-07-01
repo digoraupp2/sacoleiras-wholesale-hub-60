@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { LancamentoForm } from "@/components/LancamentoForm"
@@ -7,6 +7,7 @@ import { LancamentoFilters } from "@/components/LancamentoFilters"
 import { LancamentoCard } from "@/components/LancamentoCard"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Lancamento {
   id: number
@@ -22,6 +23,18 @@ interface Lancamento {
   tipo?: string
 }
 
+interface Produto {
+  id: string
+  nome: string
+  preco_base: number
+  categoria: string
+}
+
+interface Sacoleira {
+  id: string
+  nome: string
+}
+
 interface LancamentosContentProps {
   lancamentos: Lancamento[]
   setLancamentos: React.Dispatch<React.SetStateAction<Lancamento[]>>
@@ -31,24 +44,79 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filtroCategoria, setFiltroCategoria] = useState("todas")
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([])
+  const [loading, setLoading] = useState(true)
   const { userProfile, isAdmin } = useAuth()
   const { toast } = useToast()
 
-  const mockProdutos = [
-    { id: 1, nome: "Blusa Feminina Básica", preco: 35.00, categoria: "Roupas Femininas" },
-    { id: 2, nome: "Calça Jeans Masculina", preco: 89.90, categoria: "Roupas Masculinas" },
-    { id: 3, nome: "Vestido Floral", preco: 59.90, categoria: "Roupas Femininas" },
-    { id: 4, nome: "Tênis Esportivo", preco: 120.00, categoria: "Calçados" }
-  ]
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-  const mockSacoleiras = [
-    { id: 1, nome: "Maria Silva" },
-    { id: 2, nome: "Ana Santos" },
-    { id: 3, nome: "Carla Oliveira" },
-    { id: 4, nome: "Rosa Costa" }
-  ]
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      
+      // Buscar produtos
+      const { data: produtosData, error: produtosError } = await supabase
+        .from('produtos')
+        .select(`
+          id,
+          nome,
+          preco_base,
+          categorias (nome)
+        `)
+        .order('nome')
 
-  const categorias = [...new Set(mockProdutos.map(p => p.categoria))]
+      if (produtosError) {
+        console.error('Erro ao buscar produtos:', produtosError)
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os produtos.",
+          variant: "destructive"
+        })
+      } else {
+        const produtosFormatados = produtosData?.map(produto => ({
+          id: produto.id,
+          nome: produto.nome,
+          preco_base: produto.preco_base,
+          categoria: produto.categorias?.nome || 'Sem categoria'
+        })) || []
+        setProdutos(produtosFormatados)
+      }
+
+      // Buscar sacoleiras
+      const { data: sacoleirasData, error: sacoleirasError } = await supabase
+        .from('sacoleiras')
+        .select('id, nome')
+        .order('nome')
+
+      if (sacoleirasError) {
+        console.error('Erro ao buscar sacoleiras:', sacoleirasError)
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as sacoleiras.",
+          variant: "destructive"
+        })
+      } else {
+        console.log('Sacoleiras carregadas:', sacoleirasData?.length || 0)
+        setSacoleiras(sacoleirasData || [])
+      }
+
+    } catch (error) {
+      console.error('Erro inesperado ao carregar dados:', error)
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao carregar dados.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const categorias = [...new Set(produtos.map(p => p.categoria))]
 
   // Filtrar lançamentos baseado no tipo de usuário
   let lancamentosParaExibir = lancamentos;
@@ -96,6 +164,16 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
     }
   }
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-8">
+          <p>Carregando dados...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -120,8 +198,8 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
         <LancamentoForm
           onSubmit={handleSubmit}
           onCancel={() => setShowForm(false)}
-          produtos={mockProdutos}
-          sacoleiras={mockSacoleiras}
+          produtos={produtos}
+          sacoleiras={sacoleiras}
         />
       )}
 
