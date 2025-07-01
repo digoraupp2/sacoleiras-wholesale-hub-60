@@ -33,6 +33,14 @@ export function useLancamentoSubmission() {
         tipoCorrigido = 'entrega'
       } else if (tipoCorrigido === 'devolucao' || tipoCorrigido === 'devolução') {
         tipoCorrigido = 'devolucao'
+      } else {
+        console.error("Tipo inválido recebido:", tipoCorrigido)
+        toast({
+          title: "Erro de validação",
+          description: "Tipo deve ser 'entrega' ou 'devolução'",
+          variant: "destructive",
+        })
+        return null
       }
       
       console.log("Tipo original:", formData.tipo)

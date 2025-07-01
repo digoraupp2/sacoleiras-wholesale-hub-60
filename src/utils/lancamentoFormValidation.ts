@@ -11,20 +11,41 @@ export function validateLancamentoForm(
   console.log("Tipo:", tipo)
   console.log("Quantidade:", quantidade)
   
-  const quantidadeNum = parseInt(quantidade)
-  console.log("Quantidade numérica:", quantidadeNum)
+  const errors: string[] = []
   
-  // Verificar se o tipo é válido
+  // Validar produto
+  if (!produtoId || produtoId.trim() === '') {
+    errors.push('Produto deve ser selecionado')
+  }
+  
+  // Validar sacoleira
+  if (!sacoleiraId || sacoleiraId.trim() === '') {
+    errors.push('Sacoleira deve ser selecionada')
+  }
+  
+  // Validar tipo
   const tiposValidos = ['entrega', 'devolucao']
-  const tipoValido = tiposValidos.includes(tipo)
-  console.log("Tipo válido:", tipoValido)
-  console.log("Tipos aceitos:", tiposValidos)
+  if (!tipo || !tiposValidos.includes(tipo)) {
+    errors.push('Tipo deve ser "entrega" ou "devolução"')
+  }
   
-  const isValid = produtoId && sacoleiraId && tipoValido && quantidade && quantidadeNum > 0
+  // Validar quantidade
+  const quantidadeNum = parseInt(quantidade)
+  if (!quantidade || isNaN(quantidadeNum) || quantidadeNum <= 0) {
+    errors.push('Quantidade deve ser um número maior que zero')
+  }
+  
+  console.log("Quantidade numérica:", quantidadeNum)
+  console.log("Tipo válido:", tiposValidos.includes(tipo))
+  console.log("Tipos aceitos:", tiposValidos)
+  console.log("Erros encontrados:", errors)
+  
+  const isValid = errors.length === 0
   console.log("Formulário válido:", isValid)
   
   return {
     isValid,
-    quantidadeNum
+    quantidadeNum: isNaN(quantidadeNum) ? 0 : quantidadeNum,
+    errors
   }
 }
