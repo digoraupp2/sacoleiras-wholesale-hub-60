@@ -69,7 +69,6 @@ export type Database = {
           data_lancamento: string
           id: string
           observacoes: string | null
-          pagamento: boolean | null
           produto_id: string
           quantidade: number
           sacoleira_id: string
@@ -83,7 +82,6 @@ export type Database = {
           data_lancamento?: string
           id?: string
           observacoes?: string | null
-          pagamento?: boolean | null
           produto_id: string
           quantidade: number
           sacoleira_id: string
@@ -97,7 +95,6 @@ export type Database = {
           data_lancamento?: string
           id?: string
           observacoes?: string | null
-          pagamento?: boolean | null
           produto_id?: string
           quantidade?: number
           sacoleira_id?: string

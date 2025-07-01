@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 import { LancamentoFormSelects } from "@/components/LancamentoFormSelects"
 import { LancamentoFormInputs } from "@/components/LancamentoFormInputs"
-import { LancamentoFormPagamento } from "@/components/LancamentoFormPagamento"
 import { LancamentoFormSummary } from "@/components/LancamentoFormSummary"
 import { useLancamentoForm } from "@/hooks/useLancamentoForm"
 import { validateLancamentoForm } from "@/utils/lancamentoFormValidation"
@@ -29,8 +28,6 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
     setQuantidade,
     observacoes,
     setObservacoes,
-    pagamento,
-    setPagamento,
     loading,
     setLoading,
     resetForm,
@@ -93,12 +90,6 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
             setQuantidade={setQuantidade}
             observacoes={observacoes}
             setObservacoes={setObservacoes}
-            loading={loading}
-          />
-
-          <LancamentoFormPagamento
-            pagamento={pagamento}
-            setPagamento={setPagamento}
             loading={loading}
           />
 
