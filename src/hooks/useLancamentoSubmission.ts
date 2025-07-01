@@ -8,12 +8,12 @@ export function useLancamentoSubmission() {
 
   const handleSubmit = async (formData: any): Promise<Lancamento | null> => {
     try {
-      console.log("=== INÍCIO DO PROCESSO DE CRIAÇÃO ===")
-      console.log("Dados do formulário recebidos:", formData)
+      console.log("=== INÍCIO DO PROCESSO DE CRIAÇÃO DE LANÇAMENTO ===")
+      console.log("Form data recebido:", formData)
       
-      // Verificar se todos os campos obrigatórios estão presentes
+      // Verificar campos obrigatórios
       const camposObrigatorios = ['produto_id', 'sacoleira_id', 'tipo', 'quantidade', 'valor_unitario', 'valor_total']
-      const camposFaltando = camposObrigatorios.filter(campo => !formData[campo])
+      const camposFaltando = camposObrigatorios.filter(campo => !formData[campo] && formData[campo] !== 0)
       
       if (camposFaltando.length > 0) {
         console.error("Campos obrigatórios faltando:", camposFaltando)
@@ -25,9 +25,7 @@ export function useLancamentoSubmission() {
         return null
       }
 
-      console.log("Validação inicial passou. Preparando dados para inserção...")
-      
-      // Garantir que o tipo está correto
+      // Validar e corrigir tipo
       let tipoCorrigido = formData.tipo
       if (tipoCorrigido === 'entrega') {
         tipoCorrigido = 'entrega'
@@ -43,8 +41,7 @@ export function useLancamentoSubmission() {
         return null
       }
       
-      console.log("Tipo original:", formData.tipo)
-      console.log("Tipo corrigido:", tipoCorrigido)
+      console.log("Tipo validado:", tipoCorrigido)
       
       const dadosParaInserir = {
         produto_id: formData.produto_id,
@@ -59,8 +56,7 @@ export function useLancamentoSubmission() {
       
       console.log("Dados preparados para inserção:", dadosParaInserir)
       
-      // Salvar no banco de dados
-      console.log("Iniciando inserção no Supabase...")
+      // Inserir no banco
       const { data, error } = await supabase
         .from('lancamentos')
         .insert([dadosParaInserir])
@@ -72,36 +68,28 @@ export function useLancamentoSubmission() {
           valor_total,
           observacoes,
           data_lancamento,
-          produtos (
-            id,
-            nome,
-            categorias (nome)
-          ),
-          sacoleiras (
-            id,
-            nome
-          )
+          produto_id,
+          sacoleira_id
         `)
         .single()
 
       if (error) {
-        console.error('=== ERRO DETALHADO DO SUPABASE ===')
-        console.error('Código do erro:', error.code)
-        console.error('Mensagem do erro:', error.message)
-        console.error('Detalhes do erro:', error.details)
-        console.error('Hint do erro:', error.hint)
-        console.error('Erro completo:', error)
+        console.error('=== ERRO DO SUPABASE ===')
+        console.error('Código:', error.code)
+        console.error('Mensagem:', error.message)
+        console.error('Detalhes:', error.details)
+        console.error('Hint:', error.hint)
         
         toast({
           title: "Erro ao criar lançamento",
-          description: `Erro do banco de dados: ${error.message}`,
+          description: `Erro do banco: ${error.message}`,
           variant: "destructive",
         })
         return null
       }
 
       if (!data) {
-        console.error("Nenhum dado retornado após inserção")
+        console.error("Nenhum dado retornado")
         toast({
           title: "Erro ao criar lançamento",
           description: "Nenhum dado foi retornado após a inserção.",
@@ -111,39 +99,44 @@ export function useLancamentoSubmission() {
       }
 
       console.log("=== SUCESSO NA INSERÇÃO ===")
-      console.log("Dados retornados do Supabase:", data)
+      console.log("Dados retornados:", data)
+
+      // Buscar informações adicionais para o retorno
+      const [produtoResponse, sacoleiraResponse] = await Promise.all([
+        supabase.from('produtos').select('nome, categorias(nome)').eq('id', data.produto_id).single(),
+        supabase.from('sacoleiras').select('nome').eq('id', data.sacoleira_id).single()
+      ])
       
-      // Criar o objeto do novo lançamento
+      // Criar objeto de retorno
       const novoLancamento: Lancamento = {
         id: data.id,
-        produto: data.produtos?.nome || '',
-        produto_id: data.produtos?.id || '',
+        produto: produtoResponse.data?.nome || '',
+        produto_id: data.produto_id,
         valor: Number(data.valor_unitario || 0),
         quantidade: data.quantidade,
-        categoria: data.produtos?.categorias?.nome || 'Sem categoria',
-        sacoleira: data.sacoleiras?.nome || '',
-        sacoleira_id: data.sacoleiras?.id || '',
+        categoria: produtoResponse.data?.categorias?.nome || 'Sem categoria',
+        sacoleira: sacoleiraResponse.data?.nome || '',
+        sacoleira_id: data.sacoleira_id,
         data: data.data_lancamento || new Date().toISOString(),
         total: Number(data.valor_total || 0),
         observacoes: data.observacoes || '',
         tipo: data.tipo
       }
       
-      console.log("Objeto lançamento criado:", novoLancamento)
+      console.log("Lançamento criado:", novoLancamento)
       
       const tipoTexto = tipoCorrigido === 'entrega' ? 'entregue' : 'devolvido'
       
       toast({
         title: "Lançamento criado com sucesso!",
-        description: `${formData.produto || 'Produto'} foi ${tipoTexto} para ${formData.sacoleira || 'sacoleira'}`,
+        description: `${produtoResponse.data?.nome || 'Produto'} foi ${tipoTexto} para ${sacoleiraResponse.data?.nome || 'sacoleira'}`,
       })
 
       return novoLancamento
     } catch (error) {
       console.error("=== ERRO INESPERADO ===")
-      console.error("Tipo do erro:", typeof error)
-      console.error("Erro capturado:", error)
-      console.error("Stack trace:", error instanceof Error ? error.stack : 'Não disponível')
+      console.error("Erro:", error)
+      console.error("Stack:", error instanceof Error ? error.stack : 'N/A')
       
       toast({
         title: "Erro ao criar lançamento",

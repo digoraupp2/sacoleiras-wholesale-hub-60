@@ -38,18 +38,18 @@ export const useEstoqueData = () => {
       setLoading(true);
       setError(null);
 
-      if (!user) {
+      if (!user?.id) {
         console.log('No user found, skipping estoque fetch');
         setEstoque([]);
         setProdutos([]);
         setSacoleiras([]);
-        setLoading(false);
         return;
       }
 
-      console.log('Fetching estoque data for user:', user.id);
+      console.log('=== FETCHING ESTOQUE DATA ===');
+      console.log('User ID:', user.id);
 
-      // Buscar dados do estoque
+      // Buscar dados do estoque via view
       const { data: estoqueData, error: estoqueError } = await supabase
         .from('estoque_sacoleiras')
         .select('*')
@@ -57,24 +57,72 @@ export const useEstoqueData = () => {
         .order('produto_nome', { ascending: true });
 
       if (estoqueError) {
-        console.error('Error fetching estoque:', estoqueError);
-        setError('Erro ao carregar dados do estoque');
-        return;
+        console.error('Error fetching estoque via view:', estoqueError);
+        // Fallback: tentar buscar diretamente das tabelas
+        console.log('Tentando fallback...');
+        
+        const { data: movimentacoesData, error: movError } = await supabase
+          .from('movimentacoes')
+          .select(`
+            sacoleira_id,
+            produto_id,
+            tipo_movimentacao,
+            quantidade,
+            valor_unitario
+          `);
+
+        if (movError) {
+          console.error('Error fetching movimentacoes:', movError);
+          setError('Erro ao carregar dados do estoque');
+          return;
+        }
+
+        console.log('Movimentações encontradas:', movimentacoesData?.length || 0);
+        setEstoque([]);
+      } else {
+        console.log('Estoque data fetched via view:', estoqueData?.length || 0);
+        setEstoque(estoqueData || []);
       }
 
-      // Buscar produtos com categorias
+      // Buscar produtos
       const { data: produtosData, error: produtosError } = await supabase
         .from('produtos')
         .select(`
           id,
           nome,
           preco_base,
+          categoria_id,
           categorias!inner(nome)
         `)
         .order('nome');
 
       if (produtosError) {
         console.error('Error fetching produtos:', produtosError);
+        // Tentar sem join com categorias
+        const { data: produtosSemCategoria, error: produtosSemCategoriaError } = await supabase
+          .from('produtos')
+          .select('id, nome, preco_base')
+          .order('nome');
+
+        if (produtosSemCategoriaError) {
+          console.error('Error fetching produtos sem categoria:', produtosSemCategoriaError);
+        } else {
+          const produtosFormatados = (produtosSemCategoria || []).map(produto => ({
+            id: produto.id,
+            nome: produto.nome,
+            categoria: 'Sem categoria',
+            precoVenda: Number(produto.preco_base || 0)
+          }));
+          setProdutos(produtosFormatados);
+        }
+      } else {
+        const produtosFormatados = (produtosData || []).map(produto => ({
+          id: produto.id,
+          nome: produto.nome,
+          categoria: produto.categorias?.nome || 'Sem categoria',
+          precoVenda: Number(produto.preco_base || 0)
+        }));
+        setProdutos(produtosFormatados);
       }
 
       // Buscar sacoleiras ativas
@@ -85,23 +133,11 @@ export const useEstoqueData = () => {
 
       if (sacoleirasError) {
         console.error('Error fetching sacoleiras:', sacoleirasError);
+      } else {
+        console.log('Sacoleiras fetched:', sacoleirasData?.length || 0);
+        setSacoleiras(sacoleirasData || []);
       }
 
-      // Transformar dados dos produtos
-      const produtosFormatados = (produtosData || []).map(produto => ({
-        id: produto.id,
-        nome: produto.nome,
-        categoria: produto.categorias?.nome || 'Sem categoria',
-        precoVenda: Number(produto.preco_base || 0)
-      }));
-
-      console.log('Estoque data fetched:', estoqueData?.length, 'items');
-      console.log('Produtos fetched:', produtosFormatados.length, 'items');
-      console.log('Sacoleiras fetched:', sacoleirasData?.length, 'items');
-
-      setEstoque(estoqueData || []);
-      setProdutos(produtosFormatados);
-      setSacoleiras(sacoleirasData || []);
     } catch (err) {
       console.error('Unexpected error fetching estoque:', err);
       setError('Erro inesperado ao carregar estoque');
@@ -111,11 +147,14 @@ export const useEstoqueData = () => {
   };
 
   useEffect(() => {
-    // Só buscar dados se o usuário estiver autenticado
-    if (user && userProfile) {
+    if (user?.id && userProfile?.id) {
+      console.log('Iniciando fetch de estoque para user:', user.id);
       fetchEstoque();
+    } else {
+      console.log('Aguardando autenticação completa...');
+      setLoading(false);
     }
-  }, [user?.id, userProfile?.id]); // Mudança: usar apenas IDs específicos
+  }, [user?.id, userProfile?.id]); // Apenas IDs para evitar loops
 
   return {
     estoque,

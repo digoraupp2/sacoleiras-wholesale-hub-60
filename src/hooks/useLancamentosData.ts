@@ -15,6 +15,8 @@ export function useLancamentosData() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      console.log("=== BUSCANDO DADOS PARA LANÇAMENTOS ===")
+      console.log("User profile:", userProfile?.id)
       
       // Buscar produtos
       const { data: produtosData, error: produtosError } = await supabase
@@ -23,24 +25,44 @@ export function useLancamentosData() {
           id,
           nome,
           preco_base,
-          categorias (nome)
+          categoria_id,
+          categorias(nome)
         `)
         .order('nome')
 
       if (produtosError) {
         console.error('Erro ao buscar produtos:', produtosError)
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os produtos.",
-          variant: "destructive"
-        })
+        // Fallback sem join
+        const { data: produtosFallback, error: produtosFallbackError } = await supabase
+          .from('produtos')
+          .select('id, nome, preco_base')
+          .order('nome')
+
+        if (produtosFallbackError) {
+          console.error('Erro no fallback de produtos:', produtosFallbackError)
+          toast({
+            title: "Erro",
+            description: "Não foi possível carregar os produtos.",
+            variant: "destructive"
+          })
+        } else {
+          const produtosFormatados = (produtosFallback || []).map(produto => ({
+            id: produto.id,
+            nome: produto.nome,
+            preco_base: produto.preco_base,
+            categoria: 'Sem categoria'
+          }))
+          console.log("Produtos carregados (fallback):", produtosFormatados.length)
+          setProdutos(produtosFormatados)
+        }
       } else {
-        const produtosFormatados = produtosData?.map(produto => ({
+        const produtosFormatados = (produtosData || []).map(produto => ({
           id: produto.id,
           nome: produto.nome,
           preco_base: produto.preco_base,
           categoria: produto.categorias?.nome || 'Sem categoria'
-        })) || []
+        }))
+        console.log("Produtos carregados:", produtosFormatados.length)
         setProdutos(produtosFormatados)
       }
 
@@ -76,7 +98,7 @@ export function useLancamentosData() {
 
   const fetchLancamentos = async () => {
     try {
-      console.log("Buscando lançamentos do banco de dados...")
+      console.log("=== BUSCANDO LANÇAMENTOS ===")
       
       const { data, error } = await supabase
         .from('lancamentos')
@@ -88,15 +110,8 @@ export function useLancamentosData() {
           valor_total,
           observacoes,
           data_lancamento,
-          produtos (
-            id,
-            nome,
-            categorias (nome)
-          ),
-          sacoleiras (
-            id,
-            nome
-          )
+          produto_id,
+          sacoleira_id
         `)
         .order('data_lancamento', { ascending: false })
 
@@ -112,21 +127,40 @@ export function useLancamentosData() {
 
       console.log("Lançamentos encontrados:", data?.length || 0)
       
+      if (!data || data.length === 0) {
+        return []
+      }
+
+      // Buscar dados relacionados
+      const produtoIds = [...new Set(data.map(l => l.produto_id).filter(Boolean))]
+      const sacoleiraIds = [...new Set(data.map(l => l.sacoleira_id).filter(Boolean))]
+
+      const [produtosResponse, sacoleirasResponse] = await Promise.all([
+        supabase.from('produtos').select('id, nome, categorias(nome)').in('id', produtoIds),
+        supabase.from('sacoleiras').select('id, nome').in('id', sacoleiraIds)
+      ])
+
+      const produtosMap = new Map((produtosResponse.data || []).map(p => [p.id, { nome: p.nome, categoria: p.categorias?.nome || 'Sem categoria' }]))
+      const sacoleirasMap = new Map((sacoleirasResponse.data || []).map(s => [s.id, s.nome]))
+      
       // Transformar dados para o formato esperado
-      const lancamentosFormatados = data?.map(lancamento => ({
-        id: lancamento.id,
-        produto: lancamento.produtos?.nome || 'Produto não encontrado',
-        produto_id: lancamento.produtos?.id || '',
-        valor: Number(lancamento.valor_unitario || 0),
-        quantidade: lancamento.quantidade,
-        categoria: lancamento.produtos?.categorias?.nome || 'Sem categoria',
-        sacoleira: lancamento.sacoleiras?.nome || 'Sacoleira não encontrada',
-        sacoleira_id: lancamento.sacoleiras?.id || '',
-        data: lancamento.data_lancamento || new Date().toISOString(),
-        total: Number(lancamento.valor_total || 0),
-        observacoes: lancamento.observacoes || '',
-        tipo: lancamento.tipo
-      })) || []
+      const lancamentosFormatados = data.map(lancamento => {
+        const produtoInfo = produtosMap.get(lancamento.produto_id)
+        return {
+          id: lancamento.id,
+          produto: produtoInfo?.nome || 'Produto não encontrado',
+          produto_id: lancamento.produto_id || '',
+          valor: Number(lancamento.valor_unitario || 0),
+          quantidade: lancamento.quantidade || 0,
+          categoria: produtoInfo?.categoria || 'Sem categoria',
+          sacoleira: sacoleirasMap.get(lancamento.sacoleira_id) || 'Sacoleira não encontrada',
+          sacoleira_id: lancamento.sacoleira_id || '',
+          data: lancamento.data_lancamento || new Date().toISOString(),
+          total: Number(lancamento.valor_total || 0),
+          observacoes: lancamento.observacoes || '',
+          tipo: lancamento.tipo || ''
+        }
+      })
       
       return lancamentosFormatados
     } catch (error) {
@@ -141,11 +175,14 @@ export function useLancamentosData() {
   }
 
   useEffect(() => {
-    // Só buscar dados se o usuário estiver autenticado
-    if (userProfile) {
+    if (userProfile?.id) {
+      console.log("Iniciando fetch de dados para user:", userProfile.id)
       fetchData()
+    } else {
+      console.log("Aguardando userProfile...")
+      setLoading(false)
     }
-  }, [userProfile?.id]) // Mudança: usar apenas o ID específico
+  }, [userProfile?.id]) // Apenas ID para evitar loops
 
   return {
     produtos,
