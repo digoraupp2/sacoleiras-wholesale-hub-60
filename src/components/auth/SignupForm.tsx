@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Info } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -23,21 +23,22 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState<'admin' | 'sacoleira'>('sacoleira');
+  const [adminPassword, setAdminPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !nome) {
-      setError('Por favor, preencha todos os campos obrigatórios');
+    if (!email || !password || !nome) {
+      setError('Por favor, preencha todos os campos');
       return;
     }
 
-    // Para sacoleiras, a senha é obrigatória
-    if (tipo === 'sacoleira' && !password) {
-      setError('Por favor, preencha a senha');
+    // Verificar senha de criação para administradores
+    if (tipo === 'admin' && adminPassword !== '99730168') {
+      setError('Senha de criação de administrador incorreta');
       return;
     }
 
-    if (tipo === 'sacoleira' && password.length < 6) {
+    if (password.length < 6) {
       setError('A senha deve ter pelo menos 6 caracteres');
       return;
     }
@@ -69,16 +70,12 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
           variant: "destructive",
         });
       } else {
-        const successMessage = tipo === 'admin' 
-          ? 'Conta de administrador criada com sucesso! A senha padrão foi definida automaticamente. Verifique seu email para confirmar a conta.'
-          : 'Conta criada com sucesso! Verifique seu email para confirmar a conta.';
+        const successMessage = 'Conta criada com sucesso! Verifique seu email para confirmar a conta.';
         setSuccess(successMessage);
         
         toast({
           title: "Conta criada!",
-          description: tipo === 'admin' 
-            ? "Conta de administrador criada! Senha padrão definida automaticamente."
-            : "Verifique seu email para confirmar a conta.",
+          description: "Verifique seu email para confirmar a conta.",
         });
 
         // Clear form on success
@@ -86,6 +83,7 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
         setPassword('');
         setNome('');
         setTipo('sacoleira');
+        setAdminPassword('');
       }
     } catch (err) {
       console.error('Signup catch error:', err);
@@ -105,7 +103,7 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
   React.useEffect(() => {
     setError('');
     setSuccess('');
-  }, [email, password, nome, tipo]);
+  }, [email, password, nome, tipo, adminPassword]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,6 +133,20 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="signup-password">Senha</Label>
+        <Input
+          id="signup-password"
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoading}
+          required
+          minLength={6}
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="signup-tipo">Tipo de usuário</Label>
         <Select 
           value={tipo} 
@@ -153,28 +165,27 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
       </div>
 
       {tipo === 'admin' && (
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            Para usuários administradores, a senha padrão será definida automaticamente pelo sistema.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {tipo === 'sacoleira' && (
-        <div className="space-y-2">
-          <Label htmlFor="signup-password">Senha</Label>
-          <Input
-            id="signup-password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            required
-            minLength={6}
-          />
-        </div>
+        <>
+          <Alert>
+            <Shield className="h-4 w-4" />
+            <AlertDescription>
+              Para criar uma conta de administrador, é necessário fornecer a senha de criação de administradores.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="space-y-2">
+            <Label htmlFor="admin-password">Senha de criação de administrador</Label>
+            <Input
+              id="admin-password"
+              type="password"
+              placeholder="Senha especial para criar admin"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              disabled={isLoading}
+              required
+            />
+          </div>
+        </>
       )}
 
       {error && (
