@@ -10,14 +10,14 @@ import { useEstoque } from "@/hooks/useEstoque"
 import { useAuth } from "@/contexts/AuthContext"
 
 interface MockProduto {
-  id: number
+  id: string
   nome: string
   categoria: string
   precoVenda: number
 }
 
 interface MockSacoleira {
-  id: number
+  id: string
   nome: string
 }
 
@@ -29,19 +29,19 @@ export function EstoqueContent() {
   const { isAdmin } = useAuth()
 
   const mockProdutos: MockProduto[] = [
-    { id: 1, nome: "Blusa Feminina Básica", categoria: "Roupas Femininas", precoVenda: 35.00 },
-    { id: 2, nome: "Calça Jeans Masculina", categoria: "Roupas Masculinas", precoVenda: 89.90 },
-    { id: 3, nome: "Vestido Floral", categoria: "Roupas Femininas", precoVenda: 59.90 },
-    { id: 4, nome: "Tênis Esportivo", categoria: "Calçados", precoVenda: 120.00 },
-    { id: 5, nome: "Jaqueta de Couro", categoria: "Roupas Femininas", precoVenda: 150.00 },
-    { id: 6, nome: "Moleton Básico", categoria: "Roupas Unissex", precoVenda: 45.00 }
+    { id: "1", nome: "Blusa Feminina Básica", categoria: "Roupas Femininas", precoVenda: 35.00 },
+    { id: "2", nome: "Calça Jeans Masculina", categoria: "Roupas Masculinas", precoVenda: 89.90 },
+    { id: "3", nome: "Vestido Floral", categoria: "Roupas Femininas", precoVenda: 59.90 },
+    { id: "4", nome: "Tênis Esportivo", categoria: "Calçados", precoVenda: 120.00 },
+    { id: "5", nome: "Jaqueta de Couro", categoria: "Roupas Femininas", precoVenda: 150.00 },
+    { id: "6", nome: "Moleton Básico", categoria: "Roupas Unissex", precoVenda: 45.00 }
   ]
 
   const mockSacoleiras: MockSacoleira[] = [
-    { id: 1, nome: "Maria Silva" },
-    { id: 2, nome: "Ana Santos" },
-    { id: 3, nome: "Carla Oliveira" },
-    { id: 4, nome: "Rosa Costa" }
+    { id: "1", nome: "Maria Silva" },
+    { id: "2", nome: "Ana Santos" },
+    { id: "3", nome: "Carla Oliveira" },
+    { id: "4", nome: "Rosa Costa" }
   ]
 
   const [movimentacoes, setMovimentacoes] = useState([
