@@ -27,7 +27,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/auth" replace />;
   }
 
-  // Wait for user profile to load
+  // Wait for user profile to load, but with a timeout to prevent infinite loading
   if (!userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">

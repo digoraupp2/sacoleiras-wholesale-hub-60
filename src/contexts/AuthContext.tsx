@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// Temporary type definition until database types are regenerated
+// Type definition for user profile
 type UserProfile = {
   id: string;
   nome: string;
@@ -71,34 +71,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile after auth state changes
-          const profile = await fetchUserProfile(session.user.id);
-          setUserProfile(profile);
+          // Use setTimeout to defer the profile fetch and avoid potential deadlocks
+          setTimeout(() => {
+            fetchUserProfile(session.user.id).then(setUserProfile);
+          }, 0);
         } else {
           setUserProfile(null);
         }
         
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
           setLoading(false);
         }
       }
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
+        fetchUserProfile(session.user.id).then(setUserProfile);
       }
       
       setLoading(false);

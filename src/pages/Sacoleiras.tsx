@@ -7,6 +7,7 @@ import { Plus, Search } from "lucide-react"
 import { Link } from "react-router-dom"
 import { SacoleiraCard } from "@/components/SacoleiraCard"
 import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Sacoleira {
   id: string
@@ -25,10 +26,13 @@ export default function Sacoleiras() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([])
   const [loading, setLoading] = useState(true)
+  const { user, isAdmin } = useAuth()
 
   useEffect(() => {
-    fetchSacoleiras()
-  }, [])
+    if (user && isAdmin) {
+      fetchSacoleiras()
+    }
+  }, [user, isAdmin])
 
   const fetchSacoleiras = async () => {
     try {
@@ -113,6 +117,17 @@ export default function Sacoleiras() {
       prev.map(sacoleira => 
         sacoleira.id === updatedSacoleira.id ? updatedSacoleira : sacoleira
       )
+    )
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Acesso Negado</h1>
+          <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
+        </div>
+      </div>
     )
   }
 

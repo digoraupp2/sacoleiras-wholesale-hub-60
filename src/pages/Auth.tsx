@@ -10,9 +10,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Package } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Auth() {
   const { user, signIn, signUp, loading } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -48,9 +50,17 @@ export default function Auth() {
       console.error('Login error:', error);
       if (error.message === 'Invalid login credentials') {
         setError('Email ou senha incorretos');
+      } else if (error.message.includes('Email not confirmed')) {
+        setError('Por favor, confirme seu email antes de fazer login');
       } else {
         setError(error.message || 'Erro ao fazer login');
       }
+      
+      toast({
+        title: "Erro no login",
+        description: error.message === 'Invalid login credentials' ? 'Email ou senha incorretos' : error.message,
+        variant: "destructive",
+      });
     }
 
     setIsLoading(false);
@@ -81,8 +91,19 @@ export default function Auth() {
       } else {
         setError(error.message || 'Erro ao criar conta');
       }
+      
+      toast({
+        title: "Erro no cadastro",
+        description: error.message.includes('User already registered') ? 'Este email já está cadastrado' : error.message,
+        variant: "destructive",
+      });
     } else {
       setSuccess('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
+      
+      toast({
+        title: "Conta criada!",
+        description: "Verifique seu email para confirmar a conta.",
+      });
     }
 
     setIsLoading(false);
