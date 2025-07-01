@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,9 +8,10 @@ import { Plus, Search, Edit, Package, Trash2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { supabase } from "@/integrations/supabase/client"
 
 interface Produto {
-  id: number
+  id: string
   nome: string
   categoria: string
   precoCusto: number
@@ -22,41 +23,69 @@ interface Produto {
 
 export default function Produtos() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [loading, setLoading] = useState(true)
   const { toast } = useToast()
-  
-  const [produtos, setProdutos] = useState<Produto[]>([
-    {
-      id: 1,
-      nome: "Blusa Feminina Básica",
-      categoria: "Roupas Femininas",
-      precoCusto: 15.00,
-      precoVenda: 35.00,
-      estoque: 120,
-      status: "ativo",
-      foto: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=300&h=300&fit=crop"
-    },
-    {
-      id: 2,
-      nome: "Calça Jeans Masculina",
-      categoria: "Roupas Masculinas", 
-      precoCusto: 45.00,
-      precoVenda: 89.90,
-      estoque: 85,
-      status: "ativo",
-      foto: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=300&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      nome: "Vestido Floral",
-      categoria: "Roupas Femininas",
-      precoCusto: 28.00,
-      precoVenda: 59.90,
-      estoque: 5,
-      status: "ativo",
-      foto: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&h=300&fit=crop"
-    }
-  ])
 
+  useEffect(() => {
+    fetchProdutos()
+  }, [])
+
+  const fetchProdutos = async () => {
+    try {
+      setLoading(true)
+      console.log("Buscando produtos...")
+      
+      const { data, error } = await supabase
+        .from('produtos')
+        .select(`
+          id,
+          nome,
+          preco_base,
+          estoque_minimo,
+          categorias (
+            nome
+          )
+        `)
+        .order('nome')
+      
+      if (error) {
+        console.error('Erro ao buscar produtos:', error)
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os produtos.",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      console.log("Produtos encontrados:", data?.length || 0)
+      
+      // Transformar dados para o formato esperado
+      const produtosFormatados = data?.map(produto => ({
+        id: produto.id,
+        nome: produto.nome,
+        categoria: produto.categorias?.nome || 'Sem categoria',
+        precoCusto: 0, // Não temos preço de custo no banco atual
+        precoVenda: produto.preco_base,
+        estoque: produto.estoque_minimo || 0,
+        status: "ativo",
+        foto: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&h=300&fit=crop"
+      })) || []
+      
+      setProdutos(produtosFormatados)
+    } catch (error) {
+      console.error('Erro inesperado ao buscar produtos:', error)
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao carregar produtos.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+  
   const filteredProdutos = produtos.filter(produto =>
     produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     produto.categoria.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,13 +107,37 @@ export default function Produtos() {
     })
   }
 
-  const handleDelete = (produto: Produto) => {
-    setProdutos(prev => prev.filter(p => p.id !== produto.id))
-    toast({
-      title: "Produto excluído",
-      description: `O produto ${produto.nome} foi removido com sucesso.`,
-      variant: "destructive"
-    })
+  const handleDelete = async (produto: Produto) => {
+    try {
+      const { error } = await supabase
+        .from('produtos')
+        .delete()
+        .eq('id', produto.id)
+      
+      if (error) {
+        console.error('Erro ao excluir produto:', error)
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir o produto.",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      setProdutos(prev => prev.filter(p => p.id !== produto.id))
+      toast({
+        title: "Produto excluído",
+        description: `O produto ${produto.nome} foi removido com sucesso.`,
+        variant: "destructive"
+      })
+    } catch (error) {
+      console.error('Erro inesperado ao excluir produto:', error)
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao excluir produto.",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleStatusToggle = (produto: Produto) => {
@@ -96,6 +149,16 @@ export default function Produtos() {
       title: "Status atualizado",
       description: `Produto ${produto.nome} está agora ${newStatus}.`,
     })
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-8">
+          <p>Carregando produtos...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

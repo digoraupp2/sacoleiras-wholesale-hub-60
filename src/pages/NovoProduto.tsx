@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, Upload, X, Check } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 
 export default function NovoProduto() {
   const navigate = useNavigate()
@@ -55,16 +56,6 @@ export default function NovoProduto() {
       return
     }
 
-    if (!formData.precoCusto || parseFloat(formData.precoCusto) <= 0) {
-      toast({
-        title: "Erro",
-        description: "Preço de custo deve ser maior que zero.",
-        variant: "destructive"
-      })
-      setIsSubmitting(false)
-      return
-    }
-
     if (!formData.precoVenda || parseFloat(formData.precoVenda) <= 0) {
       toast({
         title: "Erro",
@@ -75,27 +66,65 @@ export default function NovoProduto() {
       return
     }
 
-    if (!formData.estoque || parseInt(formData.estoque) < 0) {
-      toast({
-        title: "Erro",
-        description: "Quantidade em estoque deve ser maior ou igual a zero.",
-        variant: "destructive"
-      })
-      setIsSubmitting(false)
-      return
-    }
-
     try {
-      // Simular salvamento (aqui seria a integração com banco de dados)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log("Iniciando salvamento do produto...")
       
-      console.log("Produto salvo:", {
-        ...formData,
-        fotos,
-        precoCusto: parseFloat(formData.precoCusto),
-        precoVenda: parseFloat(formData.precoVenda),
-        estoque: parseInt(formData.estoque)
-      })
+      // Primeiro, verificar se a categoria existe ou criar uma nova
+      let categoriaId = null
+      
+      // Buscar categoria existente
+      const { data: categoriaExistente, error: categoriaError } = await supabase
+        .from('categorias')
+        .select('id')
+        .eq('nome', formData.categoria)
+        .maybeSingle()
+      
+      if (categoriaError && categoriaError.code !== 'PGRST116') {
+        console.error('Erro ao buscar categoria:', categoriaError)
+        throw categoriaError
+      }
+      
+      if (categoriaExistente) {
+        categoriaId = categoriaExistente.id
+      } else {
+        // Criar nova categoria
+        const { data: novaCategoria, error: novaCategoriaError } = await supabase
+          .from('categorias')
+          .insert([{
+            nome: formData.categoria,
+            descricao: `Categoria ${formData.categoria}`
+          }])
+          .select('id')
+          .single()
+        
+        if (novaCategoriaError) {
+          console.error('Erro ao criar categoria:', novaCategoriaError)
+          throw novaCategoriaError
+        }
+        
+        categoriaId = novaCategoria.id
+      }
+      
+      // Salvar o produto
+      const produtoData = {
+        nome: formData.nome.trim(),
+        categoria_id: categoriaId,
+        preco_base: parseFloat(formData.precoVenda),
+        estoque_minimo: formData.estoque ? parseInt(formData.estoque) : 0
+      }
+      
+      const { data: produtoSalvo, error: produtoError } = await supabase
+        .from('produtos')
+        .insert([produtoData])
+        .select()
+        .single()
+      
+      if (produtoError) {
+        console.error('Erro ao salvar produto:', produtoError)
+        throw produtoError
+      }
+      
+      console.log("Produto salvo com sucesso:", produtoSalvo)
 
       toast({
         title: "Produto criado com sucesso!",
@@ -104,6 +133,7 @@ export default function NovoProduto() {
 
       navigate("/produtos")
     } catch (error) {
+      console.error("Erro detalhado ao salvar produto:", error)
       toast({
         title: "Erro ao salvar produto",
         description: "Ocorreu um erro ao salvar o produto. Tente novamente.",
@@ -194,7 +224,7 @@ export default function NovoProduto() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="precoCusto">Preço de Custo *</Label>
+                <Label htmlFor="precoCusto">Preço de Custo</Label>
                 <Input
                   id="precoCusto"
                   type="number"
@@ -203,7 +233,6 @@ export default function NovoProduto() {
                   value={formData.precoCusto}
                   onChange={(e) => handleInputChange('precoCusto', e.target.value)}
                   placeholder="0,00"
-                  required
                 />
               </div>
 
@@ -222,7 +251,7 @@ export default function NovoProduto() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="estoque">Quantidade em Estoque *</Label>
+                <Label htmlFor="estoque">Estoque Mínimo</Label>
                 <Input
                   id="estoque"
                   type="number"
@@ -230,7 +259,6 @@ export default function NovoProduto() {
                   value={formData.estoque}
                   onChange={(e) => handleInputChange('estoque', e.target.value)}
                   placeholder="0"
-                  required
                 />
               </div>
 
