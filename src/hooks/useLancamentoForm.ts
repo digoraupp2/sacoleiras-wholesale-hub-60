@@ -8,6 +8,7 @@ export function useLancamentoForm() {
   const [tipo, setTipo] = useState("")
   const [quantidade, setQuantidade] = useState("")
   const [observacoes, setObservacoes] = useState("")
+  const [pagamento, setPagamento] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const resetForm = () => {
@@ -16,6 +17,7 @@ export function useLancamentoForm() {
     setTipo("")
     setQuantidade("")
     setObservacoes("")
+    setPagamento(false)
   }
 
   const getFormData = (produtoSelecionado: Produto, sacoleiraSelecionada: Sacoleira) => {
@@ -27,6 +29,7 @@ export function useLancamentoForm() {
     console.log("Tipo:", tipo)
     console.log("Quantidade:", quantidadeNum)
     console.log("Observações:", observacoes)
+    console.log("Pagamento:", pagamento)
     
     const formData = {
       produto_id: produtoSelecionado.id,
@@ -38,6 +41,7 @@ export function useLancamentoForm() {
       valor_unitario: produtoSelecionado.preco_base,
       valor_total: produtoSelecionado.preco_base * quantidadeNum,
       observacoes: observacoes.trim(),
+      pagamento: pagamento,
       data_lancamento: new Date().toISOString(),
       categoria: produtoSelecionado.categoria
     }
@@ -57,6 +61,8 @@ export function useLancamentoForm() {
     setQuantidade,
     observacoes,
     setObservacoes,
+    pagamento,
+    setPagamento,
     loading,
     setLoading,
     resetForm,
