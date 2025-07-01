@@ -149,6 +149,8 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
               variant="outline" 
               onClick={onCancel}
               disabled={loading}
+            >
+              Cancelar
             </Button>
           </div>
         </form>
