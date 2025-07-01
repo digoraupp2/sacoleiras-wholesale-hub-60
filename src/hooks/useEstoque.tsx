@@ -11,7 +11,7 @@ interface Movimentacao {
 }
 
 interface Produto {
-  id: number
+  id: string
   nome: string
   categoria: string
   precoVenda: number
