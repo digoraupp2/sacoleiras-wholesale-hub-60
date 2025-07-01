@@ -1,44 +1,51 @@
 
-import { useToast } from "@/hooks/use-toast"
-
 export function validateLancamentoForm(
   produtoId: string,
   sacoleiraId: string,
   tipo: string,
   quantidade: string
 ) {
-  const { toast } = useToast()
+  console.log("=== VALIDAÇÃO DO FORMULÁRIO ===")
+  console.log("Produto ID:", produtoId)
+  console.log("Sacoleira ID:", sacoleiraId)
+  console.log("Tipo:", tipo)
+  console.log("Quantidade:", quantidade)
   
-  let isValid = true
-  let errors: string[] = []
-
-  if (!produtoId) {
-    errors.push("Produto é obrigatório")
-    isValid = false
+  const errors: string[] = []
+  
+  // Validar produto
+  if (!produtoId || produtoId.trim() === '') {
+    errors.push('Produto deve ser selecionado')
   }
-
-  if (!sacoleiraId) {
-    errors.push("Sacoleira é obrigatória")
-    isValid = false
+  
+  // Validar sacoleira
+  if (!sacoleiraId || sacoleiraId.trim() === '') {
+    errors.push('Sacoleira deve ser selecionada')
   }
-
-  if (!tipo) {
-    errors.push("Tipo de movimentação é obrigatório")
-    isValid = false
+  
+  // Validar tipo
+  const tiposValidos = ['entrega', 'devolucao']
+  if (!tipo || !tiposValidos.includes(tipo)) {
+    errors.push('Tipo deve ser "entrega" ou "devolução"')
   }
-
-  if (!quantidade || parseInt(quantidade) <= 0) {
-    errors.push("Quantidade deve ser maior que zero")
-    isValid = false
+  
+  // Validar quantidade
+  const quantidadeNum = parseInt(quantidade)
+  if (!quantidade || isNaN(quantidadeNum) || quantidadeNum <= 0) {
+    errors.push('Quantidade deve ser um número maior que zero')
   }
-
-  if (!isValid) {
-    toast({
-      title: "Erro de validação",
-      description: errors.join(", "),
-      variant: "destructive",
-    })
+  
+  console.log("Quantidade numérica:", quantidadeNum)
+  console.log("Tipo válido:", tiposValidos.includes(tipo))
+  console.log("Tipos aceitos:", tiposValidos)
+  console.log("Erros encontrados:", errors)
+  
+  const isValid = errors.length === 0
+  console.log("Formulário válido:", isValid)
+  
+  return {
+    isValid,
+    quantidadeNum: isNaN(quantidadeNum) ? 0 : quantidadeNum,
+    errors
   }
-
-  return { isValid, errors }
 }
