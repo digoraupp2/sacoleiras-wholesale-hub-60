@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 
 interface Lancamento {
-  id: number
+  id: string
   produto: string
+  produto_id: string
   valor: number
   quantidade: number
   categoria: string
@@ -52,6 +53,7 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
 
   useEffect(() => {
     fetchData()
+    fetchLancamentos()
   }, [])
 
   const fetchData = async () => {
@@ -116,6 +118,71 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
     }
   }
 
+  const fetchLancamentos = async () => {
+    try {
+      console.log("Buscando lançamentos do banco de dados...")
+      
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .select(`
+          id,
+          tipo,
+          quantidade,
+          valor_unitario,
+          valor_total,
+          observacoes,
+          data_lancamento,
+          produtos (
+            id,
+            nome,
+            categorias (nome)
+          ),
+          sacoleiras (
+            id,
+            nome
+          )
+        `)
+        .order('data_lancamento', { ascending: false })
+
+      if (error) {
+        console.error('Erro ao buscar lançamentos:', error)
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os lançamentos.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      console.log("Lançamentos encontrados:", data?.length || 0)
+      
+      // Transformar dados para o formato esperado
+      const lancamentosFormatados = data?.map(lancamento => ({
+        id: lancamento.id,
+        produto: lancamento.produtos?.nome || 'Produto não encontrado',
+        produto_id: lancamento.produtos?.id || '',
+        valor: lancamento.valor_unitario,
+        quantidade: lancamento.quantidade,
+        categoria: lancamento.produtos?.categorias?.nome || 'Sem categoria',
+        sacoleira: lancamento.sacoleiras?.nome || 'Sacoleira não encontrada',
+        sacoleira_id: lancamento.sacoleiras?.id || '',
+        data: lancamento.data_lancamento.split('T')[0],
+        total: lancamento.valor_total,
+        observacoes: lancamento.observacoes || '',
+        tipo: lancamento.tipo
+      })) || []
+      
+      setLancamentos(lancamentosFormatados)
+    } catch (error) {
+      console.error('Erro inesperado ao buscar lançamentos:', error)
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao carregar lançamentos.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const categorias = [...new Set(produtos.map(p => p.categoria))]
 
   // Filtrar lançamentos baseado no tipo de usuário
@@ -135,14 +202,69 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
     return matchesSearch && matchesCategoria
   })
 
-  const handleSubmit = (formData: any) => {
+  const handleSubmit = async (formData: any) => {
     try {
-      console.log("Novo lançamento:", formData)
+      console.log("Criando novo lançamento:", formData)
       
-      // Adicionar o novo lançamento à lista
+      // Salvar no banco de dados
+      const { data, error } = await supabase
+        .from('lancamentos')
+        .insert([{
+          produto_id: formData.produto_id,
+          sacoleira_id: formData.sacoleira_id,
+          tipo: formData.tipo,
+          quantidade: formData.quantidade,
+          valor_unitario: formData.valor_unitario,
+          valor_total: formData.valor_total,
+          observacoes: formData.observacoes || null,
+          data_lancamento: formData.data_lancamento
+        }])
+        .select(`
+          id,
+          tipo,
+          quantidade,
+          valor_unitario,
+          valor_total,
+          observacoes,
+          data_lancamento,
+          produtos (
+            id,
+            nome,
+            categorias (nome)
+          ),
+          sacoleiras (
+            id,
+            nome
+          )
+        `)
+        .single()
+
+      if (error) {
+        console.error('Erro ao salvar lançamento:', error)
+        toast({
+          title: "Erro ao criar lançamento",
+          description: "Não foi possível salvar o lançamento. Tente novamente.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      console.log("Lançamento salvo com sucesso:", data)
+      
+      // Adicionar o novo lançamento à lista local
       const novoLancamento: Lancamento = {
-        ...formData,
-        id: Date.now() // Gerar um ID único baseado no timestamp
+        id: data.id,
+        produto: data.produtos?.nome || '',
+        produto_id: data.produtos?.id || '',
+        valor: data.valor_unitario,
+        quantidade: data.quantidade,
+        categoria: data.produtos?.categorias?.nome || 'Sem categoria',
+        sacoleira: data.sacoleiras?.nome || '',
+        sacoleira_id: data.sacoleiras?.id || '',
+        data: data.data_lancamento.split('T')[0],
+        total: data.valor_total,
+        observacoes: data.observacoes || '',
+        tipo: data.tipo
       }
       
       setLancamentos(prev => [novoLancamento, ...prev])

@@ -5,8 +5,9 @@ import { LancamentosContent } from "@/components/LancamentosContent"
 import { EstoqueContent } from "@/components/EstoqueContent"
 
 interface Lancamento {
-  id: number
+  id: string
   produto: string
+  produto_id: string
   valor: number
   quantidade: number
   categoria: string
@@ -19,44 +20,7 @@ interface Lancamento {
 }
 
 export default function Lancamentos() {
-  const [lancamentos, setLancamentos] = useState<Lancamento[]>([
-    {
-      id: 1,
-      produto: "Blusa Feminina Básica",
-      valor: 35.00,
-      quantidade: 5,
-      categoria: "Roupas Femininas",
-      sacoleira: "Maria Silva",
-      sacoleira_id: "1",
-      data: "2024-01-15",
-      total: 175.00,
-      tipo: "entrega"
-    },
-    {
-      id: 2,
-      produto: "Calça Jeans Masculina",
-      valor: 89.90,
-      quantidade: 2,
-      categoria: "Roupas Masculinas",
-      sacoleira: "Ana Santos",
-      sacoleira_id: "2",
-      data: "2024-01-14",
-      total: 179.80,
-      tipo: "entrega"
-    },
-    {
-      id: 3,
-      produto: "Vestido Floral",
-      valor: 59.90,
-      quantidade: 3,
-      categoria: "Roupas Femininas",
-      sacoleira: "Carla Oliveira",
-      sacoleira_id: "3",
-      data: "2024-01-13",
-      total: 179.70,
-      tipo: "devolucao"
-    }
-  ])
+  const [lancamentos, setLancamentos] = useState<Lancamento[]>([])
 
   return (
     <div className="space-y-6">

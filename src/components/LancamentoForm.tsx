@@ -53,16 +53,17 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
     
     try {
       const novoLancamento = {
+        produto_id: produtoSelecionado.id,
         produto: produtoSelecionado.nome,
-        valor: produtoSelecionado.preco_base,
-        quantidade: quantidadeNum,
-        categoria: produtoSelecionado.categoria,
-        sacoleira: sacoleiraSelecionada.nome,
         sacoleira_id: sacoleiraSelecionada.id,
-        data: new Date().toISOString().split('T')[0],
-        total: produtoSelecionado.preco_base * quantidadeNum,
+        sacoleira: sacoleiraSelecionada.nome,
+        tipo: tipo,
+        quantidade: quantidadeNum,
+        valor_unitario: produtoSelecionado.preco_base,
+        valor_total: produtoSelecionado.preco_base * quantidadeNum,
         observacoes: observacoes.trim(),
-        tipo: tipo
+        data_lancamento: new Date().toISOString(),
+        categoria: produtoSelecionado.categoria
       }
 
       await onSubmit(novoLancamento)

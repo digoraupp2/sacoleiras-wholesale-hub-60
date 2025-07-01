@@ -30,6 +30,77 @@ export type Database = {
         }
         Relationships: []
       }
+      lancamentos: {
+        Row: {
+          created_at: string
+          data_lancamento: string
+          id: string
+          observacoes: string | null
+          produto_id: string
+          quantidade: number
+          sacoleira_id: string
+          tipo: string
+          updated_at: string
+          valor_total: number
+          valor_unitario: number
+        }
+        Insert: {
+          created_at?: string
+          data_lancamento?: string
+          id?: string
+          observacoes?: string | null
+          produto_id: string
+          quantidade: number
+          sacoleira_id: string
+          tipo: string
+          updated_at?: string
+          valor_total: number
+          valor_unitario: number
+        }
+        Update: {
+          created_at?: string
+          data_lancamento?: string
+          id?: string
+          observacoes?: string | null
+          produto_id?: string
+          quantidade?: number
+          sacoleira_id?: string
+          tipo?: string
+          updated_at?: string
+          valor_total?: number
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_sacoleiras"
+            referencedColumns: ["produto_id"]
+          },
+          {
+            foreignKeyName: "lancamentos_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_sacoleira_id_fkey"
+            columns: ["sacoleira_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_sacoleiras"
+            referencedColumns: ["sacoleira_id"]
+          },
+          {
+            foreignKeyName: "lancamentos_sacoleira_id_fkey"
+            columns: ["sacoleira_id"]
+            isOneToOne: false
+            referencedRelation: "sacoleiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimentacoes: {
         Row: {
           created_at: string | null
