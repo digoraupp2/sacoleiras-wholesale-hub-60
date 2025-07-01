@@ -34,8 +34,7 @@ const allNavigationItems = [
 ]
 
 const allQuickActions = [
-  { title: "Novo Produto", url: "/produtos/novo", icon: Plus, adminOnly: true },
-  { title: "Nova Sacoleira", url: "/sacoleiras/nova", icon: Plus, adminOnly: true },
+  { title: "Novo Lançamento", url: "/lancamentos", icon: Plus, adminOnly: false },
 ]
 
 export function AppSidebar() {
