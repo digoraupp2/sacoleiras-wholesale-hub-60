@@ -256,7 +256,15 @@ export type Database = {
       }
     }
     Functions: {
+      get_current_sacoleira_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_sacoleira: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

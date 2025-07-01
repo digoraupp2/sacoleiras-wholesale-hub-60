@@ -8,6 +8,7 @@ import { Link } from "react-router-dom"
 import { SacoleiraCard } from "@/components/SacoleiraCard"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
 
 interface Sacoleira {
   id: string
@@ -27,6 +28,7 @@ export default function Sacoleiras() {
   const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([])
   const [loading, setLoading] = useState(true)
   const { user, isAdmin } = useAuth()
+  const { toast } = useToast()
 
   useEffect(() => {
     if (user && isAdmin) {
@@ -44,6 +46,11 @@ export default function Sacoleiras() {
 
       if (error) {
         console.error('Erro ao buscar sacoleiras:', error)
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as sacoleiras.",
+          variant: "destructive"
+        })
         return
       }
 
@@ -101,6 +108,11 @@ export default function Sacoleiras() {
       setSacoleiras(sacoleirasWithEstoque)
     } catch (error) {
       console.error('Erro ao buscar sacoleiras:', error)
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao carregar sacoleiras.",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }

@@ -71,7 +71,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     let mounted = true;
 
-    // Get initial session first
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
+        if (!mounted) return;
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Use setTimeout to defer the profile fetch and prevent blocking
+          setTimeout(async () => {
+            if (mounted) {
+              try {
+                const profile = await fetchUserProfile(session.user.id);
+                if (mounted) {
+                  setUserProfile(profile);
+                }
+              } catch (error) {
+                console.error('Error fetching profile on auth change:', error);
+              }
+            }
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
+        
+        // Set loading to false for relevant events
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          setLoading(false);
+        }
+      }
+    );
+
+    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -107,37 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.id);
-        
-        if (!mounted) return;
-
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          try {
-            const profile = await fetchUserProfile(session.user.id);
-            if (mounted) {
-              setUserProfile(profile);
-            }
-          } catch (error) {
-            console.error('Error fetching profile on auth change:', error);
-          }
-        } else {
-          setUserProfile(null);
-        }
-        
-        // Only set loading to false for these specific events to avoid premature loading state changes
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          setLoading(false);
-        }
-      }
-    );
-
-    // Get initial session
     getInitialSession();
 
     return () => {
