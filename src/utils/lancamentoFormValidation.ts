@@ -14,7 +14,13 @@ export function validateLancamentoForm(
   const quantidadeNum = parseInt(quantidade)
   console.log("Quantidade numérica:", quantidadeNum)
   
-  const isValid = produtoId && sacoleiraId && tipo && quantidade && quantidadeNum > 0
+  // Verificar se o tipo é válido
+  const tiposValidos = ['entrega', 'devolucao']
+  const tipoValido = tiposValidos.includes(tipo)
+  console.log("Tipo válido:", tipoValido)
+  console.log("Tipos aceitos:", tiposValidos)
+  
+  const isValid = produtoId && sacoleiraId && tipoValido && quantidade && quantidadeNum > 0
   console.log("Formulário válido:", isValid)
   
   return {

@@ -27,10 +27,21 @@ export function useLancamentoSubmission() {
 
       console.log("Validação inicial passou. Preparando dados para inserção...")
       
+      // Garantir que o tipo está correto (entrega ou devolucao, não entrega/devolução)
+      let tipoCorrigido = formData.tipo
+      if (tipoCorrigido === 'entrega') {
+        tipoCorrigido = 'entrega'
+      } else if (tipoCorrigido === 'devolucao' || tipoCorrigido === 'devolução') {
+        tipoCorrigido = 'devolucao'
+      }
+      
+      console.log("Tipo original:", formData.tipo)
+      console.log("Tipo corrigido:", tipoCorrigido)
+      
       const dadosParaInserir = {
         produto_id: formData.produto_id,
         sacoleira_id: formData.sacoleira_id,
-        tipo: formData.tipo,
+        tipo: tipoCorrigido,
         quantidade: formData.quantidade,
         valor_unitario: formData.valor_unitario,
         valor_total: formData.valor_total,
@@ -112,7 +123,7 @@ export function useLancamentoSubmission() {
       
       console.log("Objeto lançamento criado:", novoLancamento)
       
-      const tipoTexto = formData.tipo === 'entrega' ? 'entregue' : 'devolvido'
+      const tipoTexto = tipoCorrigido === 'entrega' ? 'entregue' : 'devolvido'
       
       toast({
         title: "Lançamento criado com sucesso!",
