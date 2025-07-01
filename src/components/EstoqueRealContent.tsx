@@ -10,6 +10,19 @@ import { EstoqueEmpty } from "@/components/EstoqueEmpty";
 import { useEstoqueData } from "@/hooks/useEstoqueData";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Interface para manter compatibilidade com os componentes existentes
+interface ProdutoFormatado {
+  id: string | number;
+  nome: string;
+  categoria: string;
+  precoVenda: number;
+}
+
+interface SacoleiraFormatada {
+  id: string | number;
+  nome: string;
+}
+
 export function EstoqueRealContent() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +42,20 @@ export function EstoqueRealContent() {
     }
     return acc;
   }, {} as Record<string, Record<string, number>>);
+
+  // Formatar produtos para manter compatibilidade com os tipos existentes
+  const produtosFormatados: ProdutoFormatado[] = produtos.map(produto => ({
+    id: produto.id,
+    nome: produto.nome,
+    categoria: produto.categoria,
+    precoVenda: produto.precoVenda
+  }));
+
+  // Formatar sacoleiras para manter compatibilidade com os tipos existentes
+  const sacoleirasFormatadas: SacoleiraFormatada[] = sacoleiras.map(sacoleira => ({
+    id: sacoleira.id,
+    nome: sacoleira.nome
+  }));
 
   const categorias = [...new Set(produtos.map(p => p.categoria))];
 
@@ -103,8 +130,8 @@ export function EstoqueRealContent() {
         <MovimentacaoForm
           onSubmit={handleSubmit}
           onCancel={() => setShowForm(false)}
-          produtos={produtos}
-          sacoleiras={sacoleiras}
+          produtos={produtosFormatados}
+          sacoleiras={sacoleirasFormatadas}
         />
       )}
 
@@ -116,7 +143,7 @@ export function EstoqueRealContent() {
         filtroSacoleira={filtroSacoleira}
         setFiltroSacoleira={setFiltroSacoleira}
         categorias={categorias}
-        sacoleiras={sacoleiras}
+        sacoleiras={sacoleirasFormatadas}
       />
 
       <div className="space-y-4">
@@ -125,7 +152,7 @@ export function EstoqueRealContent() {
             key={sacoleira}
             sacoleira={sacoleira}
             produtos={produtosEstoque}
-            mockProdutos={produtos}
+            mockProdutos={produtosFormatados}
           />
         ))}
       </div>

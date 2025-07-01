@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { LancamentosTabs } from "@/components/LancamentosTabs"
 import { LancamentosContent } from "@/components/LancamentosContent"
-import { EstoqueContent } from "@/components/EstoqueContent"
+import { EstoqueRealContent } from "@/components/EstoqueRealContent"
 import { Lancamento } from "@/types/lancamento"
 
 export default function Lancamentos() {
@@ -24,7 +24,7 @@ export default function Lancamentos() {
             setLancamentos={setLancamentos}
           />
         }
-        estoqueContent={<EstoqueContent />}
+        estoqueContent={<EstoqueRealContent />}
       />
     </div>
   )
