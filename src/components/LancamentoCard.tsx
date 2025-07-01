@@ -13,11 +13,29 @@ export function LancamentoCard({ lancamento }: LancamentoCardProps) {
   
   // Formatar data e hora
   const formatarDataHora = (dataString: string) => {
-    const data = new Date(dataString + 'T00:00:00')
-    return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
+    try {
+      // Se a data já contém informação de hora (formato ISO)
+      let data = new Date(dataString)
+      
+      // Se a data é inválida, tentar outros formatos
+      if (isNaN(data.getTime())) {
+        // Tentar formato apenas com data (YYYY-MM-DD)
+        data = new Date(dataString + 'T12:00:00')
+      }
+      
+      // Verificar se ainda é inválida
+      if (isNaN(data.getTime())) {
+        return 'Data inválida'
+      }
+      
+      return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    } catch (error) {
+      console.error('Erro ao formatar data:', error, 'Data recebida:', dataString)
+      return 'Data inválida'
+    }
   }
   
   return (
