@@ -1,5 +1,4 @@
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,9 +8,15 @@ import { Link, useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 
+interface Categoria {
+  id: string
+  nome: string
+}
+
 export default function NovoProduto() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -24,12 +29,32 @@ export default function NovoProduto() {
   const [fotos, setFotos] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const categorias = [
-    { id: 1, nome: "Roupas Femininas" },
-    { id: 2, nome: "Roupas Masculinas" },
-    { id: 3, nome: "Calçados" },
-    { id: 4, nome: "Acessórios" }
-  ]
+  useEffect(() => {
+    fetchCategorias()
+  }, [])
+
+  const fetchCategorias = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categorias')
+        .select('id, nome')
+        .order('nome')
+
+      if (error) {
+        console.error('Erro ao buscar categorias:', error)
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as categorias.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      setCategorias(data || [])
+    } catch (error) {
+      console.error('Erro inesperado ao buscar categorias:', error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,53 +87,17 @@ export default function NovoProduto() {
         description: "Preço de venda deve ser maior que zero.",
         variant: "destructive"
       })
-      setIsSubmitting(false)
+      setIsSubmitting(false)  
       return
     }
 
     try {
       console.log("Iniciando salvamento do produto...")
       
-      // Primeiro, verificar se a categoria existe ou criar uma nova
-      let categoriaId = null
-      
-      // Buscar categoria existente
-      const { data: categoriaExistente, error: categoriaError } = await supabase
-        .from('categorias')
-        .select('id')
-        .eq('nome', formData.categoria)
-        .maybeSingle()
-      
-      if (categoriaError && categoriaError.code !== 'PGRST116') {
-        console.error('Erro ao buscar categoria:', categoriaError)
-        throw categoriaError
-      }
-      
-      if (categoriaExistente) {
-        categoriaId = categoriaExistente.id
-      } else {
-        // Criar nova categoria
-        const { data: novaCategoria, error: novaCategoriaError } = await supabase
-          .from('categorias')
-          .insert([{
-            nome: formData.categoria,
-            descricao: `Categoria ${formData.categoria}`
-          }])
-          .select('id')
-          .single()
-        
-        if (novaCategoriaError) {
-          console.error('Erro ao criar categoria:', novaCategoriaError)
-          throw novaCategoriaError
-        }
-        
-        categoriaId = novaCategoria.id
-      }
-      
       // Salvar o produto
       const produtoData = {
         nome: formData.nome.trim(),
-        categoria_id: categoriaId,
+        categoria_id: formData.categoria,
         preco_base: parseFloat(formData.precoVenda),
         estoque_minimo: formData.estoque ? parseInt(formData.estoque) : 0
       }
@@ -218,7 +207,7 @@ export default function NovoProduto() {
                 >
                   <option value="">Selecione uma categoria</option>
                   {categorias.map(cat => (
-                    <option key={cat.id} value={cat.nome}>{cat.nome}</option>
+                    <option key={cat.id} value={cat.id}>{cat.nome}</option>
                   ))}
                 </select>
               </div>

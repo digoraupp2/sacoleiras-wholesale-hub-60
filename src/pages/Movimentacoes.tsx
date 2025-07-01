@@ -7,74 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Search, TrendingUp, TrendingDown, Package } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useMovimentacoesData } from "@/hooks/useMovimentacoesData"
 
 export default function Movimentacoes() {
   const [searchTerm, setSearchTerm] = useState("")
   const [tipoFiltro, setTipoFiltro] = useState("todos")
-  const { userProfile, isAdmin } = useAuth()
+  const { isAdmin } = useAuth()
+  const { movimentacoes, loading } = useMovimentacoesData()
   
-  const mockMovimentacoes = [
-    {
-      id: 1,
-      data: "2024-01-15",
-      tipo: "entrega",
-      sacoleira: "Maria Silva Santos",
-      sacoleira_id: "sacoleira-1",
-      produto: "Blusa Feminina Básica",
-      quantidade: 10,
-      valorUnitario: 35.00,
-      valorTotal: 350.00,
-      observacoes: "Entrega programada"
-    },
-    {
-      id: 2,
-      data: "2024-01-14",
-      tipo: "venda",
-      sacoleira: "Ana Costa Oliveira",
-      sacoleira_id: "sacoleira-2", 
-      produto: "Calça Jeans Masculina",
-      quantidade: 5,
-      valorUnitario: 89.90,
-      valorTotal: 449.50,
-      observacoes: "Venda realizada na feira"
-    },
-    {
-      id: 3,
-      data: "2024-01-14",
-      tipo: "devolucao",
-      sacoleira: "Maria Silva Santos",
-      sacoleira_id: "sacoleira-1",
-      produto: "Vestido Floral",
-      quantidade: 2,
-      valorUnitario: 59.90,
-      valorTotal: 119.80,
-      observacoes: "Produto com defeito"
-    },
-    {
-      id: 4,
-      data: "2024-01-13",
-      tipo: "entrega",
-      sacoleira: "Carla Mendes",
-      sacoleira_id: "sacoleira-3",
-      produto: "Blusa Feminina Básica",
-      quantidade: 15,
-      valorUnitario: 35.00,
-      valorTotal: 525.00,
-      observacoes: ""
-    }
-  ]
-
-  // Filtrar movimentações baseado no tipo de usuário
-  let movimentacoesParaExibir = mockMovimentacoes;
-  
-  // Se não for admin, mostrar apenas as movimentações da própria sacoleira
-  if (!isAdmin && userProfile?.sacoleira_relacionada) {
-    movimentacoesParaExibir = mockMovimentacoes.filter(
-      movimentacao => movimentacao.sacoleira_id === userProfile.sacoleira_relacionada
-    )
-  }
-
-  const filteredMovimentacoes = movimentacoesParaExibir.filter(mov => {
+  const filteredMovimentacoes = movimentacoes.filter(mov => {
     const matchesSearch = mov.sacoleira.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          mov.produto.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesTipo = tipoFiltro === "todos" || mov.tipo === tipoFiltro
@@ -87,8 +28,6 @@ export default function Movimentacoes() {
         return <TrendingUp className="w-4 h-4" />
       case "devolucao":
         return <TrendingDown className="w-4 h-4" />
-      case "venda":
-        return <Package className="w-4 h-4" />
       default:
         return <Package className="w-4 h-4" />
     }
@@ -100,11 +39,30 @@ export default function Movimentacoes() {
         return "bg-blue-100 text-blue-800"
       case "devolucao":
         return "bg-red-100 text-red-800"
-      case "venda":
-        return "bg-green-100 text-green-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
+  }
+
+  const getTipoLabel = (tipo: string) => {
+    switch (tipo) {
+      case "entrega":
+        return "Entrega"
+      case "devolucao":
+        return "Devolução"
+      default:
+        return tipo.charAt(0).toUpperCase() + tipo.slice(1)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-8">
+          <p>Carregando movimentações...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -114,7 +72,7 @@ export default function Movimentacoes() {
           <h1 className="text-3xl font-bold">Movimentações</h1>
           <p className="text-muted-foreground">
             {isAdmin 
-              ? "Histórico de entregas, vendas e devoluções" 
+              ? "Histórico de entregas e devoluções" 
               : "Seu histórico de movimentações"
             }
           </p>
@@ -150,7 +108,6 @@ export default function Movimentacoes() {
               <SelectContent>
                 <SelectItem value="todos">Todos os tipos</SelectItem>
                 <SelectItem value="entrega">Entregas</SelectItem>
-                <SelectItem value="venda">Vendas</SelectItem>
                 <SelectItem value="devolucao">Devoluções</SelectItem>
               </SelectContent>
             </Select>
@@ -178,7 +135,7 @@ export default function Movimentacoes() {
                       <div className="flex items-center gap-2">
                         {isAdmin && <h3 className="font-semibold">{mov.sacoleira}</h3>}
                         <Badge className={`${getTipoColor(mov.tipo)} border-0`}>
-                          {mov.tipo.charAt(0).toUpperCase() + mov.tipo.slice(1)}
+                          {getTipoLabel(mov.tipo)}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{mov.produto}</p>

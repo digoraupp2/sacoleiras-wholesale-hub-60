@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,7 +7,7 @@ import { Plus, Search, Edit, Package, Trash2 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { supabase } from "@/integrations/supabase/client"
+import { useProdutosData } from "@/hooks/useProdutosData"
 
 interface Produto {
   id: string
@@ -23,75 +22,15 @@ interface Produto {
 
 export default function Produtos() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [produtos, setProdutos] = useState<Produto[]>([])
-  const [loading, setLoading] = useState(true)
+  const { produtos, loading, deleteProduto } = useProdutosData()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchProdutos()
-  }, [])
-
-  const fetchProdutos = async () => {
-    try {
-      setLoading(true)
-      console.log("Buscando produtos...")
-      
-      const { data, error } = await supabase
-        .from('produtos')
-        .select(`
-          id,
-          nome,
-          preco_base,
-          estoque_minimo,
-          categorias (
-            nome
-          )
-        `)
-        .order('nome')
-      
-      if (error) {
-        console.error('Erro ao buscar produtos:', error)
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os produtos.",
-          variant: "destructive"
-        })
-        return
-      }
-      
-      console.log("Produtos encontrados:", data?.length || 0)
-      
-      // Transformar dados para o formato esperado
-      const produtosFormatados = data?.map(produto => ({
-        id: produto.id,
-        nome: produto.nome,
-        categoria: produto.categorias?.nome || 'Sem categoria',
-        precoCusto: 0, // Não temos preço de custo no banco atual
-        precoVenda: produto.preco_base,
-        estoque: produto.estoque_minimo || 0,
-        status: "ativo",
-        foto: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&h=300&fit=crop"
-      })) || []
-      
-      setProdutos(produtosFormatados)
-    } catch (error) {
-      console.error('Erro inesperado ao buscar produtos:', error)
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao carregar produtos.",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-  
   const filteredProdutos = produtos.filter(produto =>
     produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     produto.categoria.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleEdit = (produto: Produto) => {
+  const handleEdit = (produto: any) => {
     console.log("Editando produto:", produto)
     toast({
       title: "Funcionalidade em desenvolvimento",
@@ -99,7 +38,7 @@ export default function Produtos() {
     })
   }
 
-  const handleEstoque = (produto: Produto) => {
+  const handleEstoque = (produto: any) => {
     console.log("Gerenciando estoque do produto:", produto)
     toast({
       title: "Estoque atualizado",
@@ -107,47 +46,22 @@ export default function Produtos() {
     })
   }
 
-  const handleDelete = async (produto: Produto) => {
-    try {
-      const { error } = await supabase
-        .from('produtos')
-        .delete()
-        .eq('id', produto.id)
-      
-      if (error) {
-        console.error('Erro ao excluir produto:', error)
-        toast({
-          title: "Erro",
-          description: "Não foi possível excluir o produto.",
-          variant: "destructive"
-        })
-        return
-      }
-      
-      setProdutos(prev => prev.filter(p => p.id !== produto.id))
+  const handleDelete = async (produto: any) => {
+    const success = await deleteProduto(produto.id)
+    if (success) {
       toast({
         title: "Produto excluído",
         description: `O produto ${produto.nome} foi removido com sucesso.`,
         variant: "destructive"
       })
-    } catch (error) {
-      console.error('Erro inesperado ao excluir produto:', error)
-      toast({
-        title: "Erro",
-        description: "Erro inesperado ao excluir produto.",
-        variant: "destructive"
-      })
     }
   }
 
-  const handleStatusToggle = (produto: Produto) => {
-    const newStatus = produto.status === "ativo" ? "inativo" : "ativo"
-    setProdutos(prev => prev.map(p => 
-      p.id === produto.id ? { ...p, status: newStatus } : p
-    ))
+  const handleStatusToggle = (produto: any) => {
+    // Esta funcionalidade precisa ser implementada no backend
     toast({
-      title: "Status atualizado",
-      description: `Produto ${produto.nome} está agora ${newStatus}.`,
+      title: "Funcionalidade em desenvolvimento",
+      description: `Alteração de status será implementada em breve.`,
     })
   }
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Edit, Trash2, Tag, X, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { useCategoriasData } from "@/hooks/useCategoriasData"
 
 interface Categoria {
   id: number
@@ -19,51 +19,21 @@ interface Categoria {
 export default function Categorias() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Categoria | null>(null)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
     status: "ativa"
   })
   const { toast } = useToast()
-  
-  const [categorias, setCategorias] = useState<Categoria[]>([
-    {
-      id: 1,
-      nome: "Roupas Femininas",
-      descricao: "Blusas, vestidos, saias e acessórios femininos",
-      status: "ativa",
-      produtosCount: 45
-    },
-    {
-      id: 2,
-      nome: "Roupas Masculinas", 
-      descricao: "Camisas, calças, bermudas masculinas",
-      status: "ativa",
-      produtosCount: 32
-    },
-    {
-      id: 3,
-      nome: "Calçados",
-      descricao: "Sapatos, tênis, sandálias",
-      status: "ativa",
-      produtosCount: 28
-    },
-    {
-      id: 4,
-      nome: "Acessórios",
-      descricao: "Bolsas, cintos, bijuterias",
-      status: "inativa",
-      produtosCount: 15
-    }
-  ])
+  const { categorias, loading, createCategoria, updateCategoria, deleteCategoria } = useCategoriasData()
 
   const filteredCategorias = categorias.filter(categoria =>
     categoria.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     categoria.descricao.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.nome.trim()) {
@@ -77,37 +47,32 @@ export default function Categorias() {
 
     if (editingCategory) {
       // Editando categoria existente
-      setCategorias(prev => prev.map(cat => 
-        cat.id === editingCategory.id 
-          ? { ...cat, nome: formData.nome, descricao: formData.descricao, status: formData.status }
-          : cat
-      ))
-      toast({
-        title: "Categoria atualizada",
-        description: `A categoria "${formData.nome}" foi atualizada com sucesso.`,
-      })
+      const success = await updateCategoria(editingCategory.id, formData.nome, formData.descricao)
+      if (success) {
+        toast({
+          title: "Categoria atualizada",
+          description: `A categoria "${formData.nome}" foi atualizada com sucesso.`,
+        })
+      }
     } else {
       // Criando nova categoria
-      const newCategory: Categoria = {
-        id: Date.now(),
-        nome: formData.nome,
-        descricao: formData.descricao,
-        status: formData.status,
-        produtosCount: 0
+      const novaCategoria = await createCategoria(formData.nome, formData.descricao)
+      if (novaCategoria) {
+        toast({
+          title: "Categoria criada",
+          description: `A categoria "${formData.nome}" foi criada com sucesso.`,
+        })
       }
-      setCategorias(prev => [...prev, newCategory])
-      toast({
-        title: "Categoria criada",
-        description: `A categoria "${formData.nome}" foi criada com sucesso.`,
-      })
     }
 
-    setShowForm(false)
-    setEditingCategory(null)
-    setFormData({ nome: "", descricao: "", status: "ativa" })
+    if (editingCategory || categorias.some(c => c.nome === formData.nome)) {
+      setShowForm(false)
+      setEditingCategory(null)
+      setFormData({ nome: "", descricao: "", status: "ativa" })
+    }
   }
 
-  const handleEdit = (categoria: Categoria) => {
+  const handleEdit = (categoria: any) => {
     setEditingCategory(categoria)
     setFormData({
       nome: categoria.nome,
@@ -117,7 +82,7 @@ export default function Categorias() {
     setShowForm(true)
   }
 
-  const handleDelete = (categoria: Categoria) => {
+  const handleDelete = async (categoria: any) => {
     if (categoria.produtosCount > 0) {
       toast({
         title: "Não é possível excluir",
@@ -127,22 +92,21 @@ export default function Categorias() {
       return
     }
 
-    setCategorias(prev => prev.filter(cat => cat.id !== categoria.id))
-    toast({
-      title: "Categoria excluída",
-      description: `A categoria "${categoria.nome}" foi removida com sucesso.`,
-      variant: "destructive"
-    })
+    const success = await deleteCategoria(categoria.id)
+    if (success) {
+      toast({
+        title: "Categoria excluída",
+        description: `A categoria "${categoria.nome}" foi removida com sucesso.`,
+        variant: "destructive"
+      })
+    }
   }
 
-  const handleStatusToggle = (categoria: Categoria) => {
-    const newStatus = categoria.status === "ativa" ? "inativa" : "ativa"
-    setCategorias(prev => prev.map(cat => 
-      cat.id === categoria.id ? { ...cat, status: newStatus } : cat
-    ))
+  const handleStatusToggle = (categoria: any) => {
+    // Esta funcionalidade precisa ser implementada no backend
     toast({
-      title: "Status atualizado",
-      description: `Categoria "${categoria.nome}" está agora ${newStatus}.`,
+      title: "Funcionalidade em desenvolvimento",
+      description: `Alteração de status será implementada em breve.`,
     })
   }
 
@@ -150,6 +114,16 @@ export default function Categorias() {
     setShowForm(false)
     setEditingCategory(null)
     setFormData({ nome: "", descricao: "", status: "ativa" })
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-8">
+          <p>Carregando categorias...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
