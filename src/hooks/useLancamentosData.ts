@@ -125,7 +125,7 @@ export function useLancamentosData() {
         categoria: lancamento.produtos?.categorias?.nome || 'Sem categoria',
         sacoleira: lancamento.sacoleiras?.nome || 'Sacoleira não encontrada',
         sacoleira_id: lancamento.sacoleiras?.id || '',
-        data: lancamento.data_lancamento.split('T')[0],
+        data: lancamento.data_lancamento, // Manter a data completa com hora
         total: lancamento.valor_total,
         observacoes: lancamento.observacoes || '',
         tipo: lancamento.tipo

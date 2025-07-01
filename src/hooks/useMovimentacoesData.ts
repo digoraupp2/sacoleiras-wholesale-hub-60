@@ -70,7 +70,7 @@ export function useMovimentacoesData() {
       // Transformar dados para o formato esperado
       const movimentacoesFormatadas = data?.map(mov => ({
         id: mov.id,
-        data: mov.data_movimentacao.split('T')[0],
+        data: mov.data_movimentacao, // Manter a data completa com hora
         tipo: mov.tipo_movimentacao,
         sacoleira: mov.sacoleiras?.nome || 'Sacoleira não encontrada',
         sacoleira_id: mov.sacoleiras?.id || '',

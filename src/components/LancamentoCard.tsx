@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Package, Calendar, User, FileText, ArrowUp, ArrowDown } from "lucide-react"
@@ -9,6 +10,15 @@ interface LancamentoCardProps {
 
 export function LancamentoCard({ lancamento }: LancamentoCardProps) {
   const isEntrega = !lancamento.tipo || lancamento.tipo === 'entrega'
+  
+  // Formatar data e hora
+  const formatarDataHora = (dataString: string) => {
+    const data = new Date(dataString + 'T00:00:00')
+    return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    })
+  }
   
   return (
     <Card>
@@ -47,8 +57,8 @@ export function LancamentoCard({ lancamento }: LancamentoCardProps) {
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Data</p>
-            <p className="font-semibold">{new Date(lancamento.data).toLocaleDateString('pt-BR')}</p>
+            <p className="text-sm text-muted-foreground">Data e Hora</p>
+            <p className="font-semibold">{formatarDataHora(lancamento.data)}</p>
           </div>
         </div>
         
