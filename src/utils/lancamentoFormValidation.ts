@@ -1,51 +1,44 @@
 
+import { useToast } from "@/hooks/use-toast"
+
 export function validateLancamentoForm(
   produtoId: string,
   sacoleiraId: string,
   tipo: string,
   quantidade: string
 ) {
-  console.log("=== VALIDAÇÃO DO FORMULÁRIO ===")
-  console.log("Produto ID:", produtoId)
-  console.log("Sacoleira ID:", sacoleiraId)
-  console.log("Tipo:", tipo)
-  console.log("Quantidade:", quantidade)
+  const { toast } = useToast()
   
-  const errors: string[] = []
-  
-  // Validar produto
-  if (!produtoId || produtoId.trim() === '') {
-    errors.push('Produto deve ser selecionado')
+  let isValid = true
+  let errors: string[] = []
+
+  if (!produtoId) {
+    errors.push("Produto é obrigatório")
+    isValid = false
   }
-  
-  // Validar sacoleira
-  if (!sacoleiraId || sacoleiraId.trim() === '') {
-    errors.push('Sacoleira deve ser selecionada')
+
+  if (!sacoleiraId) {
+    errors.push("Sacoleira é obrigatória")
+    isValid = false
   }
-  
-  // Validar tipo
-  const tiposValidos = ['entrega', 'devolucao']
-  if (!tipo || !tiposValidos.includes(tipo)) {
-    errors.push('Tipo deve ser "entrega" ou "devolução"')
+
+  if (!tipo) {
+    errors.push("Tipo de movimentação é obrigatório")
+    isValid = false
   }
-  
-  // Validar quantidade
-  const quantidadeNum = parseInt(quantidade)
-  if (!quantidade || isNaN(quantidadeNum) || quantidadeNum <= 0) {
-    errors.push('Quantidade deve ser um número maior que zero')
+
+  if (!quantidade || parseInt(quantidade) <= 0) {
+    errors.push("Quantidade deve ser maior que zero")
+    isValid = false
   }
-  
-  console.log("Quantidade numérica:", quantidadeNum)
-  console.log("Tipo válido:", tiposValidos.includes(tipo))
-  console.log("Tipos aceitos:", tiposValidos)
-  console.log("Erros encontrados:", errors)
-  
-  const isValid = errors.length === 0
-  console.log("Formulário válido:", isValid)
-  
-  return {
-    isValid,
-    quantidadeNum: isNaN(quantidadeNum) ? 0 : quantidadeNum,
-    errors
+
+  if (!isValid) {
+    toast({
+      title: "Erro de validação",
+      description: errors.join(", "),
+      variant: "destructive",
+    })
   }
+
+  return { isValid, errors }
 }

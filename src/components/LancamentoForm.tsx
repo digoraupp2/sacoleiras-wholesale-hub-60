@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
+import { X, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LancamentoFormSelects } from "@/components/LancamentoFormSelects"
 import { LancamentoFormInputs } from "@/components/LancamentoFormInputs"
 import { LancamentoFormSummary } from "@/components/LancamentoFormSummary"
@@ -61,6 +62,41 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
 
   const { isValid } = validateLancamentoForm(produtoId, sacoleiraId, tipo, quantidade)
 
+  // Verificar se há dados necessários
+  const hasProdutos = produtos.length > 0
+  const hasSacoleiras = sacoleiras.length > 0
+
+  if (!hasProdutos || !hasSacoleiras) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Novo Lançamento</CardTitle>
+            <Button variant="ghost" size="icon" onClick={onCancel}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {!hasProdutos && !hasSacoleiras 
+                ? "É necessário cadastrar produtos e sacoleiras antes de criar lançamentos."
+                : !hasProdutos 
+                ? "É necessário cadastrar produtos antes de criar lançamentos."
+                : "É necessário cadastrar sacoleiras antes de criar lançamentos."
+              }
+            </AlertDescription>
+          </Alert>
+          <Button variant="outline" onClick={onCancel} className="w-full">
+            Voltar
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -113,8 +149,6 @@ export function LancamentoForm({ onSubmit, onCancel, produtos, sacoleiras }: Lan
               variant="outline" 
               onClick={onCancel}
               disabled={loading}
-            >
-              Cancelar
             </Button>
           </div>
         </form>
