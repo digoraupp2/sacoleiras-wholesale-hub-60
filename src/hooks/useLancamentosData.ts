@@ -10,13 +10,14 @@ export function useLancamentosData() {
   const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
-  const { userProfile } = useAuth()
+  const { userProfile, isAdmin } = useAuth()
 
   const fetchData = async () => {
     try {
       setLoading(true)
       console.log("=== BUSCANDO DADOS PARA LANÇAMENTOS ===")
       console.log("User profile:", userProfile?.id)
+      console.log("Is Admin:", isAdmin)
       
       // Buscar produtos
       const { data: produtosData, error: produtosError } = await supabase
@@ -66,11 +67,18 @@ export function useLancamentosData() {
         setProdutos(produtosFormatados)
       }
 
-      // Buscar sacoleiras
-      const { data: sacoleirasData, error: sacoleirasError } = await supabase
+      // Buscar sacoleiras - se for admin, busca todas; se não, busca apenas a própria
+      let sacoleirasQuery = supabase
         .from('sacoleiras')
-        .select('id, nome')
-        .order('nome')
+        .select('id, nome');
+
+      if (!isAdmin && userProfile?.sacoleira_relacionada) {
+        console.log('Filtering sacoleiras for current user:', userProfile.sacoleira_relacionada);
+        sacoleirasQuery = sacoleirasQuery.eq('id', userProfile.sacoleira_relacionada);
+      }
+
+      const { data: sacoleirasData, error: sacoleirasError } = await sacoleirasQuery
+        .order('nome');
 
       if (sacoleirasError) {
         console.error('Erro ao buscar sacoleiras:', sacoleirasError)
@@ -99,8 +107,10 @@ export function useLancamentosData() {
   const fetchLancamentos = async () => {
     try {
       console.log("=== BUSCANDO LANÇAMENTOS ===")
+      console.log("Is Admin:", isAdmin)
+      console.log("Sacoleira relacionada:", userProfile?.sacoleira_relacionada)
       
-      const { data, error } = await supabase
+      let lancamentosQuery = supabase
         .from('lancamentos')
         .select(`
           id,
@@ -112,8 +122,16 @@ export function useLancamentosData() {
           data_lancamento,
           produto_id,
           sacoleira_id
-        `)
-        .order('data_lancamento', { ascending: false })
+        `);
+
+      // Se não for admin, filtrar apenas os lançamentos da própria sacoleira
+      if (!isAdmin && userProfile?.sacoleira_relacionada) {
+        console.log('Filtering lancamentos for sacoleira:', userProfile.sacoleira_relacionada);
+        lancamentosQuery = lancamentosQuery.eq('sacoleira_id', userProfile.sacoleira_relacionada);
+      }
+
+      const { data, error } = await lancamentosQuery
+        .order('data_lancamento', { ascending: false });
 
       if (error) {
         console.error('Erro ao buscar lançamentos:', error)
@@ -182,7 +200,7 @@ export function useLancamentosData() {
       console.log("Aguardando userProfile...")
       setLoading(false)
     }
-  }, [userProfile?.id]) // Apenas ID para evitar loops
+  }, [userProfile?.id, userProfile?.sacoleira_relacionada, isAdmin]) // Adicionar dependências relevantes
 
   return {
     produtos,

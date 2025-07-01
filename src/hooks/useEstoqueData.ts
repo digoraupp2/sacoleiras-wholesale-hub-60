@@ -31,7 +31,7 @@ export const useEstoqueData = () => {
   const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, isAdmin } = useAuth();
 
   const fetchEstoque = async () => {
     try {
@@ -48,37 +48,28 @@ export const useEstoqueData = () => {
 
       console.log('=== FETCHING ESTOQUE DATA ===');
       console.log('User ID:', user.id);
+      console.log('Is Admin:', isAdmin);
+      console.log('User Profile:', userProfile);
 
       // Buscar dados do estoque via view
-      const { data: estoqueData, error: estoqueError } = await supabase
+      let estoqueQuery = supabase
         .from('estoque_sacoleiras')
-        .select('*')
+        .select('*');
+
+      // Se não for admin, filtrar apenas pela sacoleira do usuário
+      if (!isAdmin && userProfile?.sacoleira_relacionada) {
+        console.log('Filtering estoque for sacoleira:', userProfile.sacoleira_relacionada);
+        estoqueQuery = estoqueQuery.eq('sacoleira_id', userProfile.sacoleira_relacionada);
+      }
+
+      const { data: estoqueData, error: estoqueError } = await estoqueQuery
         .order('sacoleira_nome', { ascending: true })
         .order('produto_nome', { ascending: true });
 
       if (estoqueError) {
         console.error('Error fetching estoque via view:', estoqueError);
-        // Fallback: tentar buscar diretamente das tabelas
-        console.log('Tentando fallback...');
-        
-        const { data: movimentacoesData, error: movError } = await supabase
-          .from('movimentacoes')
-          .select(`
-            sacoleira_id,
-            produto_id,
-            tipo_movimentacao,
-            quantidade,
-            valor_unitario
-          `);
-
-        if (movError) {
-          console.error('Error fetching movimentacoes:', movError);
-          setError('Erro ao carregar dados do estoque');
-          return;
-        }
-
-        console.log('Movimentações encontradas:', movimentacoesData?.length || 0);
-        setEstoque([]);
+        setError('Erro ao carregar dados do estoque');
+        return;
       } else {
         console.log('Estoque data fetched via view:', estoqueData?.length || 0);
         setEstoque(estoqueData || []);
@@ -125,10 +116,17 @@ export const useEstoqueData = () => {
         setProdutos(produtosFormatados);
       }
 
-      // Buscar sacoleiras ativas
-      const { data: sacoleirasData, error: sacoleirasError } = await supabase
+      // Buscar sacoleiras - se for admin, busca todas; se não, busca apenas a própria
+      let sacoleirasQuery = supabase
         .from('sacoleiras')
-        .select('id, nome')
+        .select('id, nome');
+
+      if (!isAdmin && userProfile?.sacoleira_relacionada) {
+        console.log('Filtering sacoleiras for current user:', userProfile.sacoleira_relacionada);
+        sacoleirasQuery = sacoleirasQuery.eq('id', userProfile.sacoleira_relacionada);
+      }
+
+      const { data: sacoleirasData, error: sacoleirasError } = await sacoleirasQuery
         .order('nome');
 
       if (sacoleirasError) {
@@ -154,7 +152,7 @@ export const useEstoqueData = () => {
       console.log('Aguardando autenticação completa...');
       setLoading(false);
     }
-  }, [user?.id, userProfile?.id]); // Apenas IDs para evitar loops
+  }, [user?.id, userProfile?.id, userProfile?.sacoleira_relacionada, isAdmin]); // Adicionar dependências relevantes
 
   return {
     estoque,

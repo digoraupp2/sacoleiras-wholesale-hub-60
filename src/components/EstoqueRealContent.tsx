@@ -116,8 +116,15 @@ export function EstoqueRealContent() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Estoque das Sacoleiras</h2>
-          <p className="text-muted-foreground">Controle o que cada sacoleira tem em estoque</p>
+          <h2 className="text-2xl font-bold">
+            {isAdmin ? "Estoque das Sacoleiras" : "Meu Estoque"}
+          </h2>
+          <p className="text-muted-foreground">
+            {isAdmin 
+              ? "Controle o que cada sacoleira tem em estoque" 
+              : "Visualize seus produtos em estoque"
+            }
+          </p>
         </div>
         {isAdmin && (
           <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90">

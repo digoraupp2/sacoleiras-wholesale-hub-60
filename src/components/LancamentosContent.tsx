@@ -35,17 +35,9 @@ export function LancamentosContent({ lancamentos, setLancamentos }: LancamentosC
 
   const categorias = [...new Set(produtos.map(p => p.categoria))]
 
-  // Filtrar lançamentos baseado no tipo de usuário
-  let lancamentosParaExibir = lancamentos;
-  
-  // Se não for admin, mostrar apenas os lançamentos da própria sacoleira
-  if (!isAdmin && userProfile?.sacoleira_relacionada) {
-    lancamentosParaExibir = lancamentos.filter(
-      lancamento => lancamento.sacoleira_id === userProfile.sacoleira_relacionada
-    )
-  }
-
-  const filteredLancamentos = lancamentosParaExibir.filter(lancamento => {
+  // Os lançamentos já vêm filtrados do hook useLancamentosData baseado no tipo de usuário
+  // Não precisamos filtrar novamente aqui
+  const filteredLancamentos = lancamentos.filter(lancamento => {
     const matchesSearch = lancamento.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          lancamento.sacoleira.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategoria = filtroCategoria === "todas" || lancamento.categoria === filtroCategoria
