@@ -27,7 +27,7 @@ export function useLancamentoSubmission() {
 
       console.log("Validação inicial passou. Preparando dados para inserção...")
       
-      // Garantir que o tipo está correto (entrega ou devolucao, não entrega/devolução)
+      // Garantir que o tipo está correto
       let tipoCorrigido = formData.tipo
       if (tipoCorrigido === 'entrega') {
         tipoCorrigido = 'entrega'
@@ -50,11 +50,11 @@ export function useLancamentoSubmission() {
         produto_id: formData.produto_id,
         sacoleira_id: formData.sacoleira_id,
         tipo: tipoCorrigido,
-        quantidade: formData.quantidade,
-        valor_unitario: formData.valor_unitario,
-        valor_total: formData.valor_total,
+        quantidade: Number(formData.quantidade),
+        valor_unitario: Number(formData.valor_unitario),
+        valor_total: Number(formData.valor_total),
         observacoes: formData.observacoes || null,
-        data_lancamento: formData.data_lancamento
+        data_lancamento: formData.data_lancamento || new Date().toISOString()
       }
       
       console.log("Dados preparados para inserção:", dadosParaInserir)
@@ -118,13 +118,13 @@ export function useLancamentoSubmission() {
         id: data.id,
         produto: data.produtos?.nome || '',
         produto_id: data.produtos?.id || '',
-        valor: data.valor_unitario,
+        valor: Number(data.valor_unitario || 0),
         quantidade: data.quantidade,
         categoria: data.produtos?.categorias?.nome || 'Sem categoria',
         sacoleira: data.sacoleiras?.nome || '',
         sacoleira_id: data.sacoleiras?.id || '',
-        data: data.data_lancamento.split('T')[0],
-        total: data.valor_total,
+        data: data.data_lancamento || new Date().toISOString(),
+        total: Number(data.valor_total || 0),
         observacoes: data.observacoes || '',
         tipo: data.tipo
       }
@@ -135,7 +135,7 @@ export function useLancamentoSubmission() {
       
       toast({
         title: "Lançamento criado com sucesso!",
-        description: `${formData.produto} foi ${tipoTexto} para ${formData.sacoleira}`,
+        description: `${formData.produto || 'Produto'} foi ${tipoTexto} para ${formData.sacoleira || 'sacoleira'}`,
       })
 
       return novoLancamento

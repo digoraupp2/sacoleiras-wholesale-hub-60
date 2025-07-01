@@ -70,7 +70,7 @@ export function useMovimentacoesData() {
       // Transformar dados para o formato esperado
       const movimentacoesFormatadas = data?.map(mov => ({
         id: mov.id,
-        data: mov.data_movimentacao, // Manter a data completa com hora
+        data: mov.data_movimentacao || new Date().toISOString(),
         tipo: mov.tipo_movimentacao,
         sacoleira: mov.sacoleiras?.nome || 'Sacoleira não encontrada',
         sacoleira_id: mov.sacoleiras?.id || '',
@@ -95,8 +95,11 @@ export function useMovimentacoesData() {
   }
 
   useEffect(() => {
-    fetchMovimentacoes()
-  }, [userProfile, isAdmin])
+    // Só buscar dados se o usuário estiver autenticado
+    if (userProfile) {
+      fetchMovimentacoes()
+    }
+  }, [userProfile?.id, isAdmin]) // Mudança: usar apenas IDs específicos para evitar loops
 
   return {
     movimentacoes,

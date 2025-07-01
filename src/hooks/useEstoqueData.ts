@@ -31,7 +31,7 @@ export const useEstoqueData = () => {
   const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
   const fetchEstoque = async () => {
     try {
@@ -43,6 +43,7 @@ export const useEstoqueData = () => {
         setEstoque([]);
         setProdutos([]);
         setSacoleiras([]);
+        setLoading(false);
         return;
       }
 
@@ -91,7 +92,7 @@ export const useEstoqueData = () => {
         id: produto.id,
         nome: produto.nome,
         categoria: produto.categorias?.nome || 'Sem categoria',
-        precoVenda: Number(produto.preco_base)
+        precoVenda: Number(produto.preco_base || 0)
       }));
 
       console.log('Estoque data fetched:', estoqueData?.length, 'items');
@@ -110,8 +111,11 @@ export const useEstoqueData = () => {
   };
 
   useEffect(() => {
-    fetchEstoque();
-  }, [user]);
+    // Só buscar dados se o usuário estiver autenticado
+    if (user && userProfile) {
+      fetchEstoque();
+    }
+  }, [user?.id, userProfile?.id]); // Mudança: usar apenas IDs específicos
 
   return {
     estoque,

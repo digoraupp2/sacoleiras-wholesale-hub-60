@@ -10,10 +10,7 @@ export function useLancamentosData() {
   const [sacoleiras, setSacoleiras] = useState<Sacoleira[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
-
-  useEffect(() => {
-    fetchData()
-  }, [])
+  const { userProfile } = useAuth()
 
   const fetchData = async () => {
     try {
@@ -120,13 +117,13 @@ export function useLancamentosData() {
         id: lancamento.id,
         produto: lancamento.produtos?.nome || 'Produto não encontrado',
         produto_id: lancamento.produtos?.id || '',
-        valor: lancamento.valor_unitario,
+        valor: Number(lancamento.valor_unitario || 0),
         quantidade: lancamento.quantidade,
         categoria: lancamento.produtos?.categorias?.nome || 'Sem categoria',
         sacoleira: lancamento.sacoleiras?.nome || 'Sacoleira não encontrada',
         sacoleira_id: lancamento.sacoleiras?.id || '',
-        data: lancamento.data_lancamento, // Manter a data completa com hora
-        total: lancamento.valor_total,
+        data: lancamento.data_lancamento || new Date().toISOString(),
+        total: Number(lancamento.valor_total || 0),
         observacoes: lancamento.observacoes || '',
         tipo: lancamento.tipo
       })) || []
@@ -142,6 +139,13 @@ export function useLancamentosData() {
       return []
     }
   }
+
+  useEffect(() => {
+    // Só buscar dados se o usuário estiver autenticado
+    if (userProfile) {
+      fetchData()
+    }
+  }, [userProfile?.id]) // Mudança: usar apenas o ID específico
 
   return {
     produtos,
