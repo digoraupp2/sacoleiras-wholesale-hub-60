@@ -29,6 +29,12 @@ export default function Auth() {
   const [signupNome, setSignupNome] = useState('');
   const [signupTipo, setSignupTipo] = useState<'admin' | 'sacoleira'>('sacoleira');
 
+  // Clear errors when switching tabs or changing inputs
+  useEffect(() => {
+    setError('');
+    setSuccess('');
+  }, [loginEmail, loginPassword, signupEmail, signupPassword, signupNome, signupTipo]);
+
   // Redirect if already authenticated
   if (user && !loading) {
     return <Navigate to="/" replace />;
@@ -44,21 +50,43 @@ export default function Auth() {
     setIsLoading(true);
     setError('');
 
-    const { error } = await signIn(loginEmail, loginPassword);
+    try {
+      const { error } = await signIn(loginEmail, loginPassword);
 
-    if (error) {
-      console.error('Login error:', error);
-      if (error.message === 'Invalid login credentials') {
-        setError('Email ou senha incorretos');
-      } else if (error.message.includes('Email not confirmed')) {
-        setError('Por favor, confirme seu email antes de fazer login');
+      if (error) {
+        console.error('Login error:', error);
+        let errorMessage = 'Erro ao fazer login';
+        
+        if (error.message === 'Invalid login credentials') {
+          errorMessage = 'Email ou senha incorretos';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Por favor, confirme seu email antes de fazer login';
+        } else if (error.message.includes('Invalid refresh token')) {
+          errorMessage = 'Sessão expirada. Tente fazer login novamente';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        setError(errorMessage);
+        
+        toast({
+          title: "Erro no login",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } else {
-        setError(error.message || 'Erro ao fazer login');
+        toast({
+          title: "Login realizado!",
+          description: "Bem-vindo ao sistema.",
+        });
       }
-      
+    } catch (err) {
+      console.error('Login catch error:', err);
+      const errorMessage = 'Erro inesperado ao fazer login';
+      setError(errorMessage);
       toast({
         title: "Erro no login",
-        description: error.message === 'Invalid login credentials' ? 'Email ou senha incorretos' : error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -82,27 +110,51 @@ export default function Auth() {
     setError('');
     setSuccess('');
 
-    const { error } = await signUp(signupEmail, signupPassword, signupNome, signupTipo);
+    try {
+      const { error } = await signUp(signupEmail, signupPassword, signupNome, signupTipo);
 
-    if (error) {
-      console.error('Signup error:', error);
-      if (error.message.includes('User already registered')) {
-        setError('Este email já está cadastrado');
+      if (error) {
+        console.error('Signup error:', error);
+        let errorMessage = 'Erro ao criar conta';
+        
+        if (error.message.includes('User already registered')) {
+          errorMessage = 'Este email já está cadastrado';
+        } else if (error.message.includes('Password should be at least')) {
+          errorMessage = 'A senha deve ter pelo menos 6 caracteres';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        setError(errorMessage);
+        
+        toast({
+          title: "Erro no cadastro",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } else {
-        setError(error.message || 'Erro ao criar conta');
+        const successMessage = 'Conta criada com sucesso! Verifique seu email para confirmar a conta.';
+        setSuccess(successMessage);
+        
+        toast({
+          title: "Conta criada!",
+          description: "Verifique seu email para confirmar a conta.",
+        });
+
+        // Clear form on success
+        setSignupEmail('');
+        setSignupPassword('');
+        setSignupNome('');
+        setSignupTipo('sacoleira');
       }
-      
+    } catch (err) {
+      console.error('Signup catch error:', err);
+      const errorMessage = 'Erro inesperado ao criar conta';
+      setError(errorMessage);
       toast({
         title: "Erro no cadastro",
-        description: error.message.includes('User already registered') ? 'Este email já está cadastrado' : error.message,
+        description: errorMessage,
         variant: "destructive",
-      });
-    } else {
-      setSuccess('Conta criada com sucesso! Verifique seu email para confirmar a conta.');
-      
-      toast({
-        title: "Conta criada!",
-        description: "Verifique seu email para confirmar a conta.",
       });
     }
 
@@ -155,6 +207,7 @@ export default function Auth() {
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       disabled={isLoading}
+                      required
                     />
                   </div>
                   
@@ -167,6 +220,7 @@ export default function Auth() {
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
                       disabled={isLoading}
+                      required
                     />
                   </div>
 
@@ -203,6 +257,7 @@ export default function Auth() {
                       value={signupNome}
                       onChange={(e) => setSignupNome(e.target.value)}
                       disabled={isLoading}
+                      required
                     />
                   </div>
 
@@ -215,6 +270,7 @@ export default function Auth() {
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
                       disabled={isLoading}
+                      required
                     />
                   </div>
                   
@@ -227,6 +283,8 @@ export default function Auth() {
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
                       disabled={isLoading}
+                      required
+                      minLength={6}
                     />
                   </div>
 
@@ -236,6 +294,7 @@ export default function Auth() {
                       value={signupTipo} 
                       onValueChange={(value: 'admin' | 'sacoleira') => setSignupTipo(value)}
                       disabled={isLoading}
+                      required
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o tipo" />
