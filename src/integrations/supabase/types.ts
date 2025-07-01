@@ -69,6 +69,13 @@ export type Database = {
             foreignKeyName: "movimentacoes_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
+            referencedRelation: "estoque_sacoleiras"
+            referencedColumns: ["produto_id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
             referencedRelation: "produtos"
             referencedColumns: ["id"]
           },
@@ -111,6 +118,13 @@ export type Database = {
           sacoleira_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "precos_personalizados_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_sacoleiras"
+            referencedColumns: ["produto_id"]
+          },
           {
             foreignKeyName: "precos_personalizados_produto_id_fkey"
             columns: ["produto_id"]
@@ -244,15 +258,7 @@ export type Database = {
           sacoleira_nome: string | null
           valor_estoque: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "movimentacoes_produto_id_fkey"
-            columns: ["produto_id"]
-            isOneToOne: false
-            referencedRelation: "produtos"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
