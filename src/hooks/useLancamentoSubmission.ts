@@ -8,21 +8,43 @@ export function useLancamentoSubmission() {
 
   const handleSubmit = async (formData: any): Promise<Lancamento | null> => {
     try {
-      console.log("Criando novo lançamento:", formData)
+      console.log("=== INÍCIO DO PROCESSO DE CRIAÇÃO ===")
+      console.log("Dados do formulário recebidos:", formData)
+      
+      // Verificar se todos os campos obrigatórios estão presentes
+      const camposObrigatorios = ['produto_id', 'sacoleira_id', 'tipo', 'quantidade', 'valor_unitario', 'valor_total']
+      const camposFaltando = camposObrigatorios.filter(campo => !formData[campo])
+      
+      if (camposFaltando.length > 0) {
+        console.error("Campos obrigatórios faltando:", camposFaltando)
+        toast({
+          title: "Erro de validação",
+          description: `Campos obrigatórios não preenchidos: ${camposFaltando.join(', ')}`,
+          variant: "destructive",
+        })
+        return null
+      }
+
+      console.log("Validação inicial passou. Preparando dados para inserção...")
+      
+      const dadosParaInserir = {
+        produto_id: formData.produto_id,
+        sacoleira_id: formData.sacoleira_id,
+        tipo: formData.tipo,
+        quantidade: formData.quantidade,
+        valor_unitario: formData.valor_unitario,
+        valor_total: formData.valor_total,
+        observacoes: formData.observacoes || null,
+        data_lancamento: formData.data_lancamento
+      }
+      
+      console.log("Dados preparados para inserção:", dadosParaInserir)
       
       // Salvar no banco de dados
+      console.log("Iniciando inserção no Supabase...")
       const { data, error } = await supabase
         .from('lancamentos')
-        .insert([{
-          produto_id: formData.produto_id,
-          sacoleira_id: formData.sacoleira_id,
-          tipo: formData.tipo,
-          quantidade: formData.quantidade,
-          valor_unitario: formData.valor_unitario,
-          valor_total: formData.valor_total,
-          observacoes: formData.observacoes || null,
-          data_lancamento: formData.data_lancamento
-        }])
+        .insert([dadosParaInserir])
         .select(`
           id,
           tipo,
@@ -44,16 +66,33 @@ export function useLancamentoSubmission() {
         .single()
 
       if (error) {
-        console.error('Erro ao salvar lançamento:', error)
+        console.error('=== ERRO DETALHADO DO SUPABASE ===')
+        console.error('Código do erro:', error.code)
+        console.error('Mensagem do erro:', error.message)
+        console.error('Detalhes do erro:', error.details)
+        console.error('Hint do erro:', error.hint)
+        console.error('Erro completo:', error)
+        
         toast({
           title: "Erro ao criar lançamento",
-          description: "Não foi possível salvar o lançamento. Tente novamente.",
+          description: `Erro do banco de dados: ${error.message}`,
           variant: "destructive",
         })
         return null
       }
 
-      console.log("Lançamento salvo com sucesso:", data)
+      if (!data) {
+        console.error("Nenhum dado retornado após inserção")
+        toast({
+          title: "Erro ao criar lançamento",
+          description: "Nenhum dado foi retornado após a inserção.",
+          variant: "destructive",
+        })
+        return null
+      }
+
+      console.log("=== SUCESSO NA INSERÇÃO ===")
+      console.log("Dados retornados do Supabase:", data)
       
       // Criar o objeto do novo lançamento
       const novoLancamento: Lancamento = {
@@ -71,6 +110,8 @@ export function useLancamentoSubmission() {
         tipo: data.tipo
       }
       
+      console.log("Objeto lançamento criado:", novoLancamento)
+      
       const tipoTexto = formData.tipo === 'entrega' ? 'entregue' : 'devolvido'
       
       toast({
@@ -80,10 +121,14 @@ export function useLancamentoSubmission() {
 
       return novoLancamento
     } catch (error) {
-      console.error("Erro ao criar lançamento:", error)
+      console.error("=== ERRO INESPERADO ===")
+      console.error("Tipo do erro:", typeof error)
+      console.error("Erro capturado:", error)
+      console.error("Stack trace:", error instanceof Error ? error.stack : 'Não disponível')
+      
       toast({
         title: "Erro ao criar lançamento",
-        description: "Tente novamente em alguns instantes.",
+        description: "Erro inesperado. Verifique o console para mais detalhes.",
         variant: "destructive",
       })
       return null

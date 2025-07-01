@@ -21,7 +21,14 @@ export function useLancamentoForm() {
   const getFormData = (produtoSelecionado: Produto, sacoleiraSelecionada: Sacoleira) => {
     const quantidadeNum = parseInt(quantidade)
     
-    return {
+    console.log("=== DADOS DO FORMULÁRIO ===")
+    console.log("Produto selecionado:", produtoSelecionado)
+    console.log("Sacoleira selecionada:", sacoleiraSelecionada)
+    console.log("Tipo:", tipo)
+    console.log("Quantidade:", quantidadeNum)
+    console.log("Observações:", observacoes)
+    
+    const formData = {
       produto_id: produtoSelecionado.id,
       produto: produtoSelecionado.nome,
       sacoleira_id: sacoleiraSelecionada.id,
@@ -34,6 +41,9 @@ export function useLancamentoForm() {
       data_lancamento: new Date().toISOString(),
       categoria: produtoSelecionado.categoria
     }
+    
+    console.log("Dados do formulário preparados:", formData)
+    return formData
   }
 
   return {
