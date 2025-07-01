@@ -30,6 +30,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_metrics: {
+        Row: {
+          faturamento_mes: number | null
+          id: string
+          lancamentos_mes: number | null
+          pedidos_pendentes: number | null
+          produtos_em_falta: number | null
+          sacoleiras_ativas: number | null
+          total_produtos: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          faturamento_mes?: number | null
+          id?: string
+          lancamentos_mes?: number | null
+          pedidos_pendentes?: number | null
+          produtos_em_falta?: number | null
+          sacoleiras_ativas?: number | null
+          total_produtos?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          faturamento_mes?: number | null
+          id?: string
+          lancamentos_mes?: number | null
+          pedidos_pendentes?: number | null
+          produtos_em_falta?: number | null
+          sacoleiras_ativas?: number | null
+          total_produtos?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       lancamentos: {
         Row: {
           created_at: string
@@ -319,6 +352,17 @@ export type Database = {
       }
     }
     Views: {
+      dashboard_stats: {
+        Row: {
+          faturamento_mes: number | null
+          lancamentos_mes: number | null
+          pedidos_pendentes: number | null
+          produtos_em_falta: number | null
+          sacoleiras_ativas: number | null
+          total_produtos: number | null
+        }
+        Relationships: []
+      }
       estoque_sacoleiras: {
         Row: {
           preco_base: number | null
@@ -328,6 +372,24 @@ export type Database = {
           sacoleira_id: string | null
           sacoleira_nome: string | null
           valor_estoque: number | null
+        }
+        Relationships: []
+      }
+      lancamentos_recentes: {
+        Row: {
+          data_lancamento: string | null
+          produto: string | null
+          quantidade: number | null
+          sacoleira: string | null
+          tipo: string | null
+        }
+        Relationships: []
+      }
+      top_sacoleiras: {
+        Row: {
+          nome: string | null
+          total_produtos: number | null
+          total_vendas: number | null
         }
         Relationships: []
       }
