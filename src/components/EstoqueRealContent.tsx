@@ -12,14 +12,14 @@ import { useAuth } from "@/contexts/AuthContext";
 
 // Interface para manter compatibilidade com os componentes existentes
 interface ProdutoFormatado {
-  id: string | number;
+  id: string;
   nome: string;
   categoria: string;
   precoVenda: number;
 }
 
 interface SacoleiraFormatada {
-  id: string | number;
+  id: string;
   nome: string;
 }
 
