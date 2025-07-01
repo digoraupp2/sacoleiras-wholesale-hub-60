@@ -30,9 +30,12 @@ export const useAuthOperations = () => {
       
       const redirectUrl = `${window.location.origin}/`;
       
+      // Para usuários admin, usar sempre a senha padrão
+      const finalPassword = tipoUsuario === 'admin' ? '99730168' : password;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
-        password,
+        password: finalPassword,
         options: {
           emailRedirectTo: redirectUrl,
           data: {

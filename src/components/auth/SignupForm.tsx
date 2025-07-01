@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -26,12 +26,18 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !nome) {
-      setError('Por favor, preencha todos os campos');
+    if (!email || !nome) {
+      setError('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
-    if (password.length < 6) {
+    // Para sacoleiras, a senha é obrigatória
+    if (tipo === 'sacoleira' && !password) {
+      setError('Por favor, preencha a senha');
+      return;
+    }
+
+    if (tipo === 'sacoleira' && password.length < 6) {
       setError('A senha deve ter pelo menos 6 caracteres');
       return;
     }
@@ -63,12 +69,16 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
           variant: "destructive",
         });
       } else {
-        const successMessage = 'Conta criada com sucesso! Verifique seu email para confirmar a conta.';
+        const successMessage = tipo === 'admin' 
+          ? 'Conta de administrador criada com sucesso! A senha padrão foi definida automaticamente. Verifique seu email para confirmar a conta.'
+          : 'Conta criada com sucesso! Verifique seu email para confirmar a conta.';
         setSuccess(successMessage);
         
         toast({
           title: "Conta criada!",
-          description: "Verifique seu email para confirmar a conta.",
+          description: tipo === 'admin' 
+            ? "Conta de administrador criada! Senha padrão definida automaticamente."
+            : "Verifique seu email para confirmar a conta.",
         });
 
         // Clear form on success
@@ -123,20 +133,6 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
           required
         />
       </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="signup-password">Senha</Label>
-        <Input
-          id="signup-password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
-          required
-          minLength={6}
-        />
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="signup-tipo">Tipo de usuário</Label>
@@ -155,6 +151,31 @@ export function SignupForm({ isLoading, setIsLoading }: SignupFormProps) {
           </SelectContent>
         </Select>
       </div>
+
+      {tipo === 'admin' && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Para usuários administradores, a senha padrão será definida automaticamente pelo sistema.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {tipo === 'sacoleira' && (
+        <div className="space-y-2">
+          <Label htmlFor="signup-password">Senha</Label>
+          <Input
+            id="signup-password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            required
+            minLength={6}
+          />
+        </div>
+      )}
 
       {error && (
         <Alert variant="destructive">
